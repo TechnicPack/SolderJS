@@ -43,7 +43,6 @@ function log(level, system, msg, meta) {
 		}
 	}
 }
-
-app.listen(config.web.port);
-
-log('info', 'Server', 'Server running on port ' + config.web.port);
+app.listen(config.web.port, function() {
+  log('info', 'Server', 'Server running on port ' + config.web.port);
+});
