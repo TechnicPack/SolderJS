@@ -12,7 +12,7 @@ var winston = require('winston');
 
 if (process.env.REDISCLOUD_URL) {
 	var redisUrl   = url.parse(process.env.REDISCLOUD_URL);
-	var rclient = require("redis").createClient(redisUrl.port, redisUrl.hostname, {no_ready_check: true});
+	var rclient = redis.createClient(redisUrl.port, redisUrl.hostname, {no_ready_check: true});
 
 	rclient.auth(redisUrl.auth.split(":")[1]);
 } else {
@@ -29,7 +29,7 @@ var app = express();
 
 app.enable('trust proxy');
 
-app.get('/api', function(req, response) {
+app.get('/', function(req, response) {
 	response.status(200).json({api: "SolderAPI", version: "0.1", stream: "beta"}).end();
 });
 
