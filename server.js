@@ -19,14 +19,6 @@ if (process.env.REDISCLOUD_URL) {
 	var rclient = redis.createClient(config.redis.port, config.redis.host);
 }
 
-var connection = mysql.createPool({
-	host: config.mysql.host,
-	user: config.mysql.user,
-	password: config.mysql.pass,
-	port: config.mysql.port,
-	database: config.mysql.name
-});
-
 var logger = new (winston.Logger)({
 		    transports: [
 		      new (winston.transports.Console)({ level: config.logging_level })
