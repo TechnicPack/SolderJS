@@ -88,6 +88,10 @@ app.use(function(req, response, next) {
 
 });
 
+app.get('/loaderio-5fb4070db3879e46e4448aed897130d8', function(req, response) {
+	return response.status(200).end("loaderio-5fb4070db3879e46e4448aed897130d8");
+});
+
 app.get('/api', function(req, response) {
 	return response.status(200).json({api: "SolderJS", version: "0.1", stream: "beta"}).end();
 });
