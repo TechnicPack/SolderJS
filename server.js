@@ -174,6 +174,10 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 	var slug = req.params.modpack;
 	var build = req.params.build;
 
+	var options = {
+		include: req.query.include
+	}
+
 	getModpack(slug, function(err, modpack) {
 		if (err) {
 			return response.status(500).json({error: "An error has occured"});
@@ -187,7 +191,7 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 
 				if (build) {
 					if (build.is_published && (!build.private || _.contains(access.client.modpacks, modpack.id))) {
-						getBuildResponse(modpack, build, function(err, bObject) {
+						getBuildResponse(modpack, build, options, function(err, bObject) {
 							return response.status(200).json(bObject);
 						});
 					} else {
@@ -236,7 +240,7 @@ function getModpackResponse(modpack, callback) {
 	});
 }
 
-function getBuildResponse(modpack, build, callback) {
+function getBuildResponse(modpack, build, options, callback) {
 
 	var bObject = {
 		minecraft: build.minecraft,
@@ -260,6 +264,15 @@ function getBuildResponse(modpack, build, callback) {
 				md5: mod.md5,
 				url: config.url.mirror + 'mods/' + mod.name + '/' + mod.name + '-' + mod.version + '.zip'
 			}
+
+			if (options.include == "mods") {
+				modObject['pretty_name'] = mod.pretty_name;
+				modObject['author'] = mod.author;
+				modObject['description'] = mod.description;
+				modObject['link'] = mod.link;
+				modObject['donate'] = mod.donatelink;
+			}
+
 			bObject.mods.push(modObject)
 		});
 
