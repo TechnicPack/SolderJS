@@ -16,6 +16,6 @@ config.redis.port = 6379;
 config.url.repo = "http://mirror.technicpack.net/Technic/";
 config.url.mirror = "http://mirror.technicpack.net/Technic/";
 
-config.pg.url = process.env.DATABASE_URL || 'localhost';
+config.pg.options = process.env.DATABASE_URL || 'localhost';
 
 module.exports = config;
