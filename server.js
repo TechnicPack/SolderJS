@@ -29,9 +29,39 @@ var app = express();
 
 app.enable('trust proxy');
 
-app.get('/', function(req, response) {
-	response.status(200).json({api: "SolderAPI", version: "0.1", stream: "beta"}).end();
+app.get('/api', function(req, response) {
+	response.status(200).json({api: "SolderJS", version: "0.1", stream: "beta"}).end();
 });
+
+app.get('/api/modpack', function(req, response) {
+	var options = {
+		include: req.query.include
+	}
+
+	getModpacks(options, function(err, modpacks) {
+		response.status(200).json(modpacks);
+	});
+});
+
+function getModpacks(options, callback) {
+	pg.connect(config.pg.url, function(err, client, done) {
+		if (err) {
+			callback(err, null);
+			return log('error', 'Database', 'Error fetching client from pool', err);
+		}
+
+		client.query('SELECT * FROM modpacks', function(err, result) {
+			done();
+
+			if (err) {
+				callback(err, null);
+				return log('error', 'Database', 'Error running query', err);
+			}
+
+			callback(null, result.rows);
+		});
+	});
+}
 
 function log(level, system, msg, meta) {
 	if (config.logging && config.logging != 0) {
