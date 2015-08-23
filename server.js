@@ -237,93 +237,109 @@ function getModpackResponse(modpack, callback) {
 }
 
 function getBuildResponse(modpack, build, callback) {
-	getBuild(modpack, build, function(err, builds) {
+
+	var bObject = {
+		minecraft: build.minecraft,
+		minecraft_md5: build.minecraft_md5,
+		forge: build.forge,
+		java: build.min_java,
+		min_memory: build.min_memory,
+		mods: []
+	}
+
+	getMods(build, function(err, mods) {
 		if (err) {
 			callback(err, null);
-			return log("error", "Builds", "Failed to get builds while building build response", err);
+			return log("error", "Mods", "Failed to get mods while building build response", err);
 		}
 
-		var bObject = {
-			minecraft: build.minecraft,
-			minecraft_md5: build.minecraft_md5,
-			forge: build.forge,
-			java: build.min_java,
-			min_memory: build.min_memory,
-			mods: []
-		}
-
-		getMods(build, function(err, mods) {
-			if (err) {
-				callback(err, null);
-				return log("error", "Mods", "Failed to get mods while building build response", err);
+		_.each(mods, function(mod) {
+			var modObject = {
+				name: mod.name,
+				version: mod.version,
+				md5: mod.md5,
+				url: config.url.mirror + 'mods/' + mod.name + '/' + mod.name + '-' + mod.version + '.zip'
 			}
-
-			_.each(mods, function(mod) {
-				var modObject = {
-					name: mod.name,
-					version: mod.version,
-					md5: mod.md5,
-					url: config.url.mirror + 'mods/' + mod.name + '/' + mod.name + '-' + mod.version + '.zip'
-				}
-				bObject.mods.push(modObject)
-			});
-
-			return callback(err, bObject);
+			bObject.mods.push(modObject)
 		});
+
+		return callback(err, bObject);
 	});
 }
 
 function getKeys(callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
-		}
+	rclient.get('api:access:keys', function(err, res) {
+		if (res) {
+			callback(null, JSON.parse(res));
+			log('debug', 'Cache', 'Loaded keys');
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
 
-		var query = 'SELECT * FROM keys';
+				var query = 'SELECT * FROM keys';
 
-		client.query(query, function(err, result) {
-			done();
+				client.query(query, function(err, result) {
+					done();
 
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
 
-			var keys = [];
+					var keys = [];
 
-			_.each(result.rows, function(key) {
-				keys.push(key.api_key);
+					_.each(result.rows, function(key) {
+						keys.push(key.api_key);
+					});
+
+					rclient.set('api:access:keys', JSON.stringify(keys));
+					rclient.expire('api:access:keys', 60);
+
+					callback(null, keys);
+				});
 			});
-			callback(null, keys);
-		});
+		}
 	});
 }
 
 function getClients(callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
-		}
+	rclient.get('api:access:clients', function(err, res) {
+		if (res) {
+			callback(null, JSON.parse(res));
+			log('debug', 'Cache', 'Loaded clients');
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
 
-		var query = 'SELECT * FROM clients';
+				var query = 'SELECT * FROM clients';
 
-		client.query(query, function(err, result) {
-			done();
+				client.query(query, function(err, result) {
+					done();
 
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
 
-			var clients = [];
+					var clients = [];
 
-			_.each(result.rows, function(client) {
-				clients.push(client.uuid);
+					_.each(result.rows, function(client) {
+						clients.push(client.uuid);
+					});
+
+					rclient.set('api:access:clients', JSON.stringify(clients));
+					rclient.expire('api:access:clients', 60);
+
+					callback(null, clients);
+				});
 			});
-			callback(null, clients);
-		});
+		}
 	});
 }
 
@@ -356,116 +372,166 @@ function getClientAccess(cid, callback) {
 }
 
 function getModpacks(callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
+	rclient.get('api:modpacks', function(err, res) {
+		if (res) {
+			log('debug', 'Cache', 'Loaded modpacks');
+			callback(null, JSON.parse(res));
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
+
+				var query = 'SELECT * FROM modpacks ORDER BY id ASC';
+
+				client.query(query, function(err, result) {
+					done();
+
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
+
+					rclient.set('api:modpacks', JSON.stringify(result.rows));
+					rclient.expire('api:modpacks', 60 * 5);
+
+					callback(null, result.rows);
+				});
+			});
 		}
-
-		var query = 'SELECT * FROM modpacks ORDER BY id ASC';
-
-		client.query(query, function(err, result) {
-			done();
-
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
-
-			callback(null, result.rows);
-		});
 	});
 }
 
 function getModpack(slug, callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
+	rclient.get('api:modpack:' + slug, function(err, res) {
+		if (res) {
+			log('debug', 'Cache', 'Loaded modpack', slug);
+			callback(null, JSON.parse(res));
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
+
+				var query = 'SELECT * FROM modpacks WHERE slug=$1 ORDER BY id ASC LIMIT 1';
+				var data = [slug];
+
+				client.query(query, data, function(err, result) {
+					done();
+
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
+
+					rclient.set('api:modpack:' + slug, JSON.stringify(result.rows[0]));
+					rclient.expire('api:modpack:' + slug, 60 * 5);
+
+					callback(null, result.rows[0]);
+				});
+			});
 		}
-
-		var query = 'SELECT * FROM modpacks WHERE slug=$1 ORDER BY id ASC LIMIT 1';
-		var data = [slug];
-
-		client.query(query, data, function(err, result) {
-			done();
-
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
-
-			callback(null, result.rows[0]);
-		});
 	});
 }
 
 function getBuilds(modpack, callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
+	rclient.get('api:modpack:builds:' + modpack.id, function(err, res) {
+		if (res) {
+			log('debug', 'Cache', 'Loaded builds', modpack.slug);
+			callback(null, JSON.parse(res));
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
+
+				var query = 'SELECT * FROM builds WHERE modpack_id=$1::int';
+				var data = [modpack.id];
+
+				client.query(query, data, function(err, result) {
+					done();
+
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
+
+					rclient.set('api:modpack:builds:' + modpack.id, JSON.stringify(result.rows));
+					rclient.expire('api:modpack:builds:' + modpack.id, 60 * 5);
+
+					callback(null, result.rows);
+				});
+			});
 		}
-
-		var query = 'SELECT * FROM builds WHERE modpack_id=$1::int';
-		var data = [modpack.id];
-
-		client.query(query, data, function(err, result) {
-			done();
-
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
-
-			callback(null, result.rows);
-		});
 	});
 }
 
 function getBuild(modpack, build, callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
+	rclient.get('api:build:' + modpack.id + ':' + build, function(err, res) {
+		if (res) {
+			log('debug', 'Cache', 'Loaded build', [modpack.slug, build]);
+			callback(null, JSON.parse(res));
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
+
+				var query = 'SELECT * FROM builds WHERE modpack_id=$1::int AND version=$2 LIMIT 1';
+				var data = [modpack.id, build];
+
+				client.query(query, data, function(err, result) {
+					done();
+
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
+
+					rclient.set('api:build:' + modpack.id + ':' + build, JSON.stringify(result.rows[0]));
+					rclient.expire('api:build:' + modpack.id + ':' + build, 60 * 5);
+
+					callback(null, result.rows[0]);
+				});
+			});
 		}
-
-		var query = 'SELECT * FROM builds WHERE modpack_id=$1::int AND version=$2 LIMIT 1';
-		var data = [modpack.id, build];
-
-		client.query(query, data, function(err, result) {
-			done();
-
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
-
-			callback(null, result.rows[0]);
-		});
 	});
 }
 
 function getMods(build, callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
-		if (err) {
-			callback(err, null);
-			return log('error', 'Database', 'Error fetching client from pool', err);
+	rclient.get('api:mods:' + build.id, function(err, res) {
+		if (res) {
+			log('debug', 'Cache', 'Loaded mods', build.id);
+			callback(null, JSON.parse(res));
+		} else {
+			pg.connect(config.pg.options, function(err, client, done) {
+				if (err) {
+					callback(err, null);
+					return log('error', 'Database', 'Error fetching client from pool', err);
+				}
+
+				var query = 'SELECT mods.id, * FROM build_modversion AS bmv INNER JOIN modversions AS mv ON mv.id = bmv.modversion_id INNER JOIN mods ON mods.id = mv.mod_id WHERE bmv.build_id=$1::int';
+				var data = [build.id];
+
+				client.query(query, data, function(err, result) {
+					done();
+
+					if (err) {
+						callback(err, null);
+						return log('error', 'Database', 'Error running query', err);
+					}
+
+					rclient.set('api:mods:' + build.id, JSON.stringify(result.rows));
+					rclient.expire('api:mods:' + build.id, 60 * 5);
+
+					callback(null, result.rows);
+				});
+			});
 		}
-
-		var query = 'SELECT mods.id, * FROM build_modversion AS bmv INNER JOIN modversions AS mv ON mv.id = bmv.modversion_id INNER JOIN mods ON mods.id = mv.mod_id WHERE bmv.build_id=$1::int';
-		var data = [build.id];
-
-		client.query(query, data, function(err, result) {
-			done();
-
-			if (err) {
-				callback(err, null);
-				return log('error', 'Database', 'Error running query', err);
-			}
-
-			callback(null, result.rows);
-		});
 	});
 }
 
