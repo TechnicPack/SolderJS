@@ -420,8 +420,10 @@ function getModpacks(callback) {
 						return log('error', 'Database', 'Error running query', err);
 					}
 
-					rclient.set('api:modpacks', JSON.stringify(result.rows));
-					rclient.expire('api:modpacks', 60 * 5);
+					if (result.rows) {
+						rclient.set('api:modpacks', JSON.stringify(result.rows));
+						rclient.expire('api:modpacks', 60 * 5);
+					}
 
 					callback(null, result.rows);
 				});
@@ -453,8 +455,10 @@ function getModpack(slug, callback) {
 						return log('error', 'Database', 'Error running query', err);
 					}
 
-					rclient.set('api:modpack:' + slug, JSON.stringify(result.rows[0]));
-					rclient.expire('api:modpack:' + slug, 60 * 5);
+					if (result.rows[0]) {
+						rclient.set('api:modpack:' + slug, JSON.stringify(result.rows[0]));
+						rclient.expire('api:modpack:' + slug, 60 * 5);
+					}
 
 					callback(null, result.rows[0]);
 				});
@@ -486,8 +490,10 @@ function getBuilds(modpack, callback) {
 						return log('error', 'Database', 'Error running query', err);
 					}
 
-					rclient.set('api:modpack:builds:' + modpack.id, JSON.stringify(result.rows));
-					rclient.expire('api:modpack:builds:' + modpack.id, 60 * 5);
+					if (result.rows) {
+						rclient.set('api:modpack:builds:' + modpack.id, JSON.stringify(result.rows));
+						rclient.expire('api:modpack:builds:' + modpack.id, 60 * 5);
+					}
 
 					callback(null, result.rows);
 				});
@@ -519,8 +525,10 @@ function getBuild(modpack, build, callback) {
 						return log('error', 'Database', 'Error running query', err);
 					}
 
-					rclient.set('api:build:' + modpack.id + ':' + build, JSON.stringify(result.rows[0]));
-					rclient.expire('api:build:' + modpack.id + ':' + build, 60 * 5);
+					if (result.rows[0]) {
+						rclient.set('api:build:' + modpack.id + ':' + build, JSON.stringify(result.rows[0]));
+						rclient.expire('api:build:' + modpack.id + ':' + build, 60 * 5);
+					}
 
 					callback(null, result.rows[0]);
 				});
@@ -552,8 +560,10 @@ function getMods(build, callback) {
 						return log('error', 'Database', 'Error running query', err);
 					}
 
-					rclient.set('api:mods:' + build.id, JSON.stringify(result.rows));
-					rclient.expire('api:mods:' + build.id, 60 * 5);
+					if (result.rows) {
+						rclient.set('api:mods:' + build.id, JSON.stringify(result.rows));
+						rclient.expire('api:mods:' + build.id, 60 * 5);
+					}
 
 					callback(null, result.rows);
 				});
