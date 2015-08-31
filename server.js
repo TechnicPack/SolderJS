@@ -208,6 +208,20 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 	});
 });
 
+app.get('/api/verify/(:key)', function(req, response) {
+	var key = req.params.key;
+
+	getKey(key, function(err, key) {
+		if (err) {
+			return response.status(200).json(err);
+		}
+
+		if (key) {
+			return response.status(200).json({valid: "Key Validated.", name: key.name, created_at: key.created_at});
+		}
+	});
+});
+
 function getModpackResponse(modpack, callback) {
 	var mObject = {
 		name: modpack.slug,
@@ -545,6 +559,33 @@ function getMods(build, callback) {
 				});
 			});
 		}
+	});
+}
+
+function getKey(key, callback) {
+	pg.connect(config.pg.options, function(err, client, done) {
+		if (err) {
+			callback(err, null);
+			return log('error', 'Database', 'Error fetching client from pool', err);
+		}
+
+		var query = 'SELECT * FROM keys WHERE api_key=$1 LIMIT 1';
+		var data = [key];
+
+		client.query(query, data, function(err, result) {
+			done();
+
+			if (err) {
+				callback(err, null);
+				return log('error', 'Database', 'Error running query', err);
+			}
+
+			if (result.rows[0]) {
+				callback(null, result.rows[0]);
+			} else {
+				callback({error: "Key does not exist"});
+			}
+		});
 	});
 }
 
