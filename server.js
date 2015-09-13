@@ -549,7 +549,7 @@ function getMods(build, callback) {
 					return log('error', 'Database', 'Error fetching client from pool', err);
 				}
 
-				var query = 'SELECT mods.id, * FROM build_modversion AS bmv INNER JOIN modversions AS mv ON mv.id = bmv.modversion_id INNER JOIN mods ON mods.id = mv.mod_id WHERE bmv.build_id=$1::int';
+				var query = 'SELECT mods.id, * FROM build_modversion AS bmv INNER JOIN modversions AS mv ON mv.id = bmv.modversion_id INNER JOIN mods ON mods.id = mv.mod_id WHERE bmv.build_id=$1::int ORDER BY mods.name DESC';
 				var data = [build.id];
 
 				client.query(query, data, function(err, result) {
