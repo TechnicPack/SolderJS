@@ -1,4 +1,6 @@
-require('newrelic');
+if (process.env.NEW_RELIC_LICENSE_KEY) {
+	require('newrelic');
+}
 
 var config = require('./config');
 var express = require('express');
@@ -261,7 +263,7 @@ function getBuildResponse(modpack, build, options, callback) {
 		minecraft_md5: build.minecraft_md5,
 		forge: build.forge,
 		java: build.min_java,
-		min_memory: build.min_memory,
+		min_memory: build.min_memory ? build.min_memory.toString() : null,
 		mods: []
 	}
 
