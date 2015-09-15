@@ -263,7 +263,7 @@ function getBuildResponse(modpack, build, options, callback) {
 		minecraft_md5: build.minecraft_md5,
 		forge: build.forge,
 		java: build.min_java,
-		min_memory: build.min_memory ? build.min_memory.toString() : null,
+		memory: build.min_memory ? build.min_memory.toString() : null,
 		mods: []
 	}
 
