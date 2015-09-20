@@ -126,7 +126,7 @@ app.get('/api/modpack', function(req, response) {
 			// Grab modpack builds async
 			async.each(modpacks, function(modpack, callback) {
 				if (apiResponse.modpacks[modpack.slug]) {
-					getModpackResponse(modpack, function(err, mObject) {
+					getModpackResponse(modpack, req, function(err, mObject) {
 						if (err) {
 							return callback(err);
 						}
@@ -160,7 +160,7 @@ app.get('/api/modpack/(:modpack)', function(req, response) {
 		}
 
 		if (modpack) {
-			getModpackResponse(modpack, function(err, res) {
+			getModpackResponse(modpack, req, function(err, res) {
 				return response.status(200).json(res);
 			});
 		} else {
@@ -222,7 +222,7 @@ app.get('/api/verify/(:key)', function(req, response) {
 	});
 });
 
-function getModpackResponse(modpack, callback) {
+function getModpackResponse(modpack, req, callback) {
 	var mObject = {
 		name: modpack.slug,
 		display_name: modpack.name,
