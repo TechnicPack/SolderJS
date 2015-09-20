@@ -29,8 +29,6 @@ var logger = new (winston.Logger)({
 
 var app = express();
 
-var access = {};
-
 app.enable('trust proxy');
 
 // Set key and client if available
@@ -38,7 +36,7 @@ app.use(function(req, response, next) {
 	var key = req.query.k;
 	var cid = req.query.cid;
 
-	access = {
+	req.access = {
 		client: { authed: false },
 		key: { authed: false }
 	};
@@ -51,7 +49,7 @@ app.use(function(req, response, next) {
 				}
 
 				if (_.contains(keys, key)) {
-					access.key = {authed: true, key: key};
+					req.access.key = {authed: true, key: key};
 					log("info", "Auth", "Authenticated API key: " + key);
 				}
 				return callback();
@@ -64,13 +62,13 @@ app.use(function(req, response, next) {
 				}
 
 				if (_.contains(clients, cid)) {
-					access.client = {authed: true, client: cid};
+					req.access.client = {authed: true, client: cid};
 					log("info", "Auth", "Authenticated Client ID: " + cid);
 					getClientAccess(cid, function(err, modpacks) {
 						if (err) {
 							return callback(err, null);
 						}
-						access.client.modpacks = modpacks;
+						req.access.client.modpacks = modpacks;
 						log("info", "Auth", "Assigned modpack access for client", modpacks);
 						return callback();
 					});
@@ -111,11 +109,11 @@ app.get('/api/modpack', function(req, response) {
 
 		_.each(modpacks, function(modpack) {
 			if (modpack.hidden) {
-				if (access.key.authed) {
+				if (req.access.key.authed) {
 					apiResponse.modpacks[modpack.slug] = modpack.name;
 				}
 			} else if (modpack.private) {
-				if (access.key.authed || _.contains(access.client.modpacks, modpack.id)) {
+				if (req.access.key.authed || _.contains(req.access.client.modpacks, modpack.id)) {
 					apiResponse.modpacks[modpack.slug] = modpack.name;
 				}
 			} else {
@@ -192,7 +190,7 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 				}
 
 				if (build) {
-					if (build.is_published && (!build.private || _.contains(access.client.modpacks, modpack.id))) {
+					if (build.is_published && (!build.private || _.contains(req.access.client.modpacks, modpack.id))) {
 						getBuildResponse(modpack, build, options, function(err, bObject) {
 							return response.status(200).json(bObject);
 						});
@@ -247,7 +245,7 @@ function getModpackResponse(modpack, callback) {
 		}
 
 		_.each(builds, function(build) {
-			if (build.is_published && (!build.private || _.contains(access.client.modpacks, modpack.id))) {
+			if (build.is_published && (!build.private || _.contains(req.access.client.modpacks, modpack.id))) {
 				mObject.builds.push(build.version);
 			}
 		});
