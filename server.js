@@ -245,7 +245,7 @@ function getModpackResponse(modpack, req, callback) {
 		}
 
 		_.each(builds, function(build) {
-			if (build.is_published && (!build.private || _.contains(req.access.client.modpacks, modpack.id))) {
+			if (build.is_published && (!build.private || ( req.access.key.authed || _.contains(req.access.client.modpacks, modpack.id)))) {
 				mObject.builds.push(build.version);
 			}
 		});
