@@ -279,6 +279,10 @@ function getBuildResponse(modpack, build, options, callback) {
 				url: config.url.mirror + 'mods/' + mod.name + '/' + mod.name + '-' + mod.version + '.zip'
 			}
 
+			if (mod.filesize) {
+				modObject['filesize'] = mod.filesize;
+			}
+
 			if (options.include == "mods") {
 				modObject['pretty_name'] = mod.pretty_name;
 				modObject['author'] = mod.author;
