@@ -13,7 +13,6 @@ config.web.port = process.env.PORT || 3000;
 config.redis.host = process.env.REDISCLOUD_URL || 'localhost';
 config.redis.port = 6379;
 
-config.url.repo = 'http://mirror.technicpack.net/Technic/';
 config.url.mirror = 'http://mirror.technicpack.net/Technic/';
 
 config.pg.options = process.env.DATABASE_URL || 'localhost';
