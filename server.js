@@ -20,10 +20,23 @@ if (process.env.REDISCLOUD_URL) {
 	rclient = redis.createClient(config.redis.port, config.redis.host);
 }
 
-var logger = new (winston.Logger)({
+var logger = winston.createLogger({
+	level: config.logging_level,
+	format: winston.format.combine(
+		winston.format.timestamp(),
+		winston.format.printf(info => {
+			return `${info.timestamp} [${info.level}] ${info.message}`;
+		})
+	),
 	transports: [
-		new (winston.transports.Console)({ level: config.logging_level })
+		new winston.transports.Console()
 	]
+});
+
+var pool = new pg.Pool({
+	connectionString: config.pg.options,
+	connectionTimeoutMillis: 1000,
+	max: 50
 });
 
 var app = express();
@@ -305,7 +318,7 @@ function getKeys(callback) {
 			callback(null, JSON.parse(res));
 			log('debug', 'Cache', 'Loaded keys');
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -343,7 +356,7 @@ function getClients(callback) {
 			callback(null, JSON.parse(res));
 			log('debug', 'Cache', 'Loaded clients');
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -376,7 +389,7 @@ function getClients(callback) {
 }
 
 function getClientAccess(cid, callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
+	pool.connect(function(err, client, done) {
 		if (err) {
 			callback(err, null);
 			return log('error', 'Database', 'Error fetching client from pool', err);
@@ -409,7 +422,7 @@ function getModpacks(callback) {
 			log('debug', 'Cache', 'Loaded modpacks');
 			callback(null, JSON.parse(res));
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -443,7 +456,7 @@ function getModpack(slug, callback) {
 			log('debug', 'Cache', 'Loaded modpack', slug);
 			callback(null, JSON.parse(res));
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -478,7 +491,7 @@ function getBuilds(modpack, callback) {
 			log('debug', 'Cache', 'Loaded builds', modpack.slug);
 			callback(null, JSON.parse(res));
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -513,7 +526,7 @@ function getBuild(modpack, build, callback) {
 			log('debug', 'Cache', 'Loaded build', [modpack.slug, build]);
 			callback(null, JSON.parse(res));
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -548,7 +561,7 @@ function getMods(build, callback) {
 			log('debug', 'Cache', 'Loaded mods', build.id);
 			callback(null, JSON.parse(res));
 		} else {
-			pg.connect(config.pg.options, function(err, client, done) {
+			pool.connect(function(err, client, done) {
 				if (err) {
 					callback(err, null);
 					return log('error', 'Database', 'Error fetching client from pool', err);
@@ -578,7 +591,7 @@ function getMods(build, callback) {
 }
 
 function getKey(key, callback) {
-	pg.connect(config.pg.options, function(err, client, done) {
+	pool.connect(function(err, client, done) {
 		if (err) {
 			callback(err, null);
 			return log('error', 'Database', 'Error fetching client from pool', err);
