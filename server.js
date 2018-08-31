@@ -100,7 +100,7 @@ app.get('/api/modpack', function(req, response) {
 
 	getModpacks(function(err, modpacks) {
 		if (err) {
-			return response.status(500).json(err);
+			return response.status(500).json({error: 'An error has occured'});
 		}
 
 		apiResponse.modpacks = {};
@@ -212,11 +212,13 @@ app.get('/api/verify/(:key)', function(req, response) {
 
 	getKey(key, function(err, key) {
 		if (err) {
-			return response.status(200).json(err);
+			return response.status(500).json({error: 'An error has occured'});
 		}
 
 		if (key) {
 			return response.status(200).json({valid: 'Key Validated.', name: key.name, created_at: key.created_at});
+		} else {
+			return response.status(200).json({'error': 'Key does not exist'});
 		}
 	});
 });
@@ -596,7 +598,7 @@ function getKey(key, callback) {
 			if (result.rows[0]) {
 				callback(null, result.rows[0]);
 			} else {
-				callback({error: 'Key does not exist'});
+				callback(null, null);
 			}
 		});
 	});
