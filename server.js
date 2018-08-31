@@ -7,20 +7,22 @@ var url = require('url');
 var _ = require('underscore');
 var winston = require('winston');
 
+var rclient;
+
 if (process.env.REDISCLOUD_URL) {
-	var redisUrl   = url.parse(process.env.REDISCLOUD_URL);
-	var rclient = redis.createClient(redisUrl.port, redisUrl.hostname, {no_ready_check: true});
+	var redisUrl = url.parse(process.env.REDISCLOUD_URL);
+	rclient = redis.createClient(redisUrl.port, redisUrl.hostname, {no_ready_check: true});
 
 	rclient.auth(redisUrl.auth.split(':')[1]);
 } else {
-	var rclient = redis.createClient(config.redis.port, config.redis.host);
+	rclient = redis.createClient(config.redis.port, config.redis.host);
 }
 
 var logger = new (winston.Logger)({
-		    transports: [
-		      new (winston.transports.Console)({ level: config.logging_level })
-		    ]
-		  });
+	transports: [
+		new (winston.transports.Console)({ level: config.logging_level })
+	]
+});
 
 var app = express();
 
@@ -190,7 +192,7 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 							return response.status(200).json(bObject);
 						});
 					} else {
-						return response.status(401).json({status: 401, error: 'You are not authorized to view this build.'});
+						return response.status(403).json({status: 403, error: 'You are not authorized to view this build.'});
 					}
 				} else {
 					return response.status(404).json({status: 404, error: 'Build does not exist.'});
@@ -600,7 +602,6 @@ function getKey(key, callback) {
 
 function log(level, system, msg, meta) {
 	if (config.logging && config.logging != 0) {
-
 		if (meta) {
 			logger.log(level, '[API][' + system + '] ' + msg, meta);
 		} else {
