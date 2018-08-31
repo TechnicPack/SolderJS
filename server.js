@@ -1,7 +1,3 @@
-if (process.env.NEW_RELIC_LICENSE_KEY) {
-	require('newrelic');
-}
-
 var config = require('./config');
 var express = require('express');
 var pg = require('pg');
