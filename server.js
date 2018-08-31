@@ -2,7 +2,6 @@ var config = require('./config');
 var express = require('express');
 var pg = require('pg');
 var redis = require('redis');
-var request = require('request');
 var async = require('async');
 var url = require('url');
 var _ = require('underscore');
