@@ -12,7 +12,7 @@ if (process.env.REDISCLOUD_URL) {
 	var redisUrl   = url.parse(process.env.REDISCLOUD_URL);
 	var rclient = redis.createClient(redisUrl.port, redisUrl.hostname, {no_ready_check: true});
 
-	rclient.auth(redisUrl.auth.split(":")[1]);
+	rclient.auth(redisUrl.auth.split(':')[1]);
 } else {
 	var rclient = redis.createClient(config.redis.port, config.redis.host);
 }
@@ -46,7 +46,7 @@ app.use(function(req, response, next) {
 
 				if (_.contains(keys, key)) {
 					req.access.key = {authed: true, key: key};
-					log("info", "Auth", "Authenticated API key: " + key);
+					log('info', 'Auth', 'Authenticated API key: ' + key);
 				}
 				return callback();
 			});
@@ -59,13 +59,13 @@ app.use(function(req, response, next) {
 
 				if (_.contains(clients, cid)) {
 					req.access.client = {authed: true, client: cid};
-					log("info", "Auth", "Authenticated Client ID: " + cid);
+					log('info', 'Auth', 'Authenticated Client ID: ' + cid);
 					getClientAccess(cid, function(err, modpacks) {
 						if (err) {
 							return callback(err, null);
 						}
 						req.access.client.modpacks = modpacks;
-						log("info", "Auth", "Assigned modpack access for client", modpacks);
+						log('info', 'Auth', 'Assigned modpack access for client', modpacks);
 						return callback();
 					});
 
@@ -77,7 +77,7 @@ app.use(function(req, response, next) {
 		},
 	], function(err) {
 		if (err) {
-			log("error", "Auth", "Error during authentication processing.", err);
+			log('error', 'Auth', 'Error during authentication processing.', err);
 		}
 		next();
 	});
@@ -85,13 +85,13 @@ app.use(function(req, response, next) {
 });
 
 app.get('/api', function(req, response) {
-	return response.status(200).json({api: "SolderJS", version: "0.1", stream: "beta"}).end();
+	return response.status(200).json({api: 'SolderJS', version: '0.1', stream: 'beta'}).end();
 });
 
 app.get('/api/modpack', function(req, response) {
 	var options = {
 		include: req.query.include
-	}
+	};
 
 	var apiResponse = {};
 
@@ -117,7 +117,7 @@ app.get('/api/modpack', function(req, response) {
 			}
 		});
 
-		if (options.include == "full") {
+		if (options.include == 'full') {
 
 			// Grab modpack builds async
 			async.each(modpacks, function(modpack, callback) {
@@ -152,7 +152,7 @@ app.get('/api/modpack/(:modpack)', function(req, response) {
 
 	getModpack(slug, function(err, modpack) {
 		if (err) {
-			return response.status(500).json({error: "An error has occured"});
+			return response.status(500).json({error: 'An error has occured'});
 		}
 
 		if (modpack) {
@@ -160,7 +160,7 @@ app.get('/api/modpack/(:modpack)', function(req, response) {
 				return response.status(200).json(res);
 			});
 		} else {
-			return response.status(404).json({status: 404, error: "Modpack does not exist"});
+			return response.status(404).json({status: 404, error: 'Modpack does not exist'});
 		}
 
 	});
@@ -172,17 +172,17 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 
 	var options = {
 		include: req.query.include
-	}
+	};
 
 	getModpack(slug, function(err, modpack) {
 		if (err) {
-			return response.status(500).json({error: "An error has occured"});
+			return response.status(500).json({error: 'An error has occured'});
 		}
 
 		if (modpack) {
 			getBuild(modpack, build, function(err, build) {
 				if (err) {
-					return response.status(500).json({error: "An error has occured"});
+					return response.status(500).json({error: 'An error has occured'});
 				}
 
 				if (build) {
@@ -191,14 +191,14 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
 							return response.status(200).json(bObject);
 						});
 					} else {
-						return response.status(401).json({status: 401, error: "You are not authorized to view this build."});
+						return response.status(401).json({status: 401, error: 'You are not authorized to view this build.'});
 					}
 				} else {
-					return response.status(404).json({status: 404, error: "Build does not exist."});
+					return response.status(404).json({status: 404, error: 'Build does not exist.'});
 				}
 			});
 		} else {
-			return response.status(404).json({status: 404, error: "Modpack does not exist"});
+			return response.status(404).json({status: 404, error: 'Modpack does not exist'});
 		}
 
 	});
@@ -213,7 +213,7 @@ app.get('/api/verify/(:key)', function(req, response) {
 		}
 
 		if (key) {
-			return response.status(200).json({valid: "Key Validated.", name: key.name, created_at: key.created_at});
+			return response.status(200).json({valid: 'Key Validated.', name: key.name, created_at: key.created_at});
 		}
 	});
 });
@@ -232,12 +232,12 @@ function getModpackResponse(modpack, req, callback) {
 		recommended: modpack.recommended,
 		latest: modpack.latest,
 		builds: []
-	}
+	};
 
 	getBuilds(modpack, function(err, builds) {
 		if (err) {
 			callback(err, null);
-			return log("error", "Modpack", "Failed to get builds while building modpack response", err);
+			return log('error', 'Modpack', 'Failed to get builds while building modpack response', err);
 		}
 
 		_.each(builds, function(build) {
@@ -259,12 +259,12 @@ function getBuildResponse(modpack, build, options, callback) {
 		java: build.min_java,
 		memory: build.min_memory ? build.min_memory.toString() : null,
 		mods: []
-	}
+	};
 
 	getMods(build, function(err, mods) {
 		if (err) {
 			callback(err, null);
-			return log("error", "Mods", "Failed to get mods while building build response", err);
+			return log('error', 'Mods', 'Failed to get mods while building build response', err);
 		}
 
 		_.each(mods, function(mod) {
@@ -273,13 +273,13 @@ function getBuildResponse(modpack, build, options, callback) {
 				version: mod.version,
 				md5: mod.md5,
 				url: config.url.mirror + 'mods/' + mod.name + '/' + mod.name + '-' + mod.version + '.zip'
-			}
+			};
 
 			if (mod.filesize) {
 				modObject['filesize'] = mod.filesize;
 			}
 
-			if (options.include == "mods") {
+			if (options.include == 'mods') {
 				modObject['pretty_name'] = mod.pretty_name;
 				modObject['author'] = mod.author;
 				modObject['description'] = mod.description;
@@ -287,7 +287,7 @@ function getBuildResponse(modpack, build, options, callback) {
 				modObject['donate'] = mod.donatelink;
 			}
 
-			bObject.mods.push(modObject)
+			bObject.mods.push(modObject);
 		});
 
 		return callback(err, bObject);
@@ -593,7 +593,7 @@ function getKey(key, callback) {
 			if (result.rows[0]) {
 				callback(null, result.rows[0]);
 			} else {
-				callback({error: "Key does not exist"});
+				callback({error: 'Key does not exist'});
 			}
 		});
 	});
@@ -610,5 +610,5 @@ function log(level, system, msg, meta) {
 	}
 }
 app.listen(config.web.port, function() {
-  log('info', 'Server', 'Server running on port ' + config.web.port);
+	log('info', 'Server', 'Server running on port ' + config.web.port);
 });
