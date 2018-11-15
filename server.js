@@ -5,7 +5,6 @@ const express = require('express');
 const pg = require('pg');
 const redis = require('redis');
 const async = require('async');
-const url = require('url');
 const _ = require('underscore');
 const winston = require('winston');
 
