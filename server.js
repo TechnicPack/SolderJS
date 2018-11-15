@@ -618,7 +618,7 @@ function getKey(key, callback) {
 }
 
 function log(level, system, msg, meta) {
-    if (config.logging && config.logging != 0) {
+    if (config.logging) {
         if (meta) {
             logger.log(level, '[API][' + system + '] ' + msg, meta);
         } else {

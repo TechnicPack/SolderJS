@@ -5,10 +5,10 @@ config.web = {};
 config.url = {};
 config.pg = {};
 
-config.logging = process.env.NODE_LOGGING || 1;
+config.logging = Boolean(parseInt(process.env.NODE_LOGGING)) || true;
 config.logging_level = process.env.LOGGING_LEVEL || 'debug';
 
-config.web.port = process.env.PORT || 3000;
+config.web.port = parseInt(process.env.PORT) || 3000;
 
 config.redis.host = process.env.REDISCLOUD_URL || 'localhost';
 config.redis.port = 6379;
