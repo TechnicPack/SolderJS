@@ -302,7 +302,6 @@ function getBuildResponse(modpack, build, options, callback) {
 				modObject['author'] = mod.author;
 				modObject['description'] = mod.description;
 				modObject['link'] = mod.link;
-				modObject['donate'] = mod.donatelink;
 			}
 
 			bObject.mods.push(modObject);
