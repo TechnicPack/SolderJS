@@ -102,7 +102,7 @@ app.use(function(req, response, next) {
 });
 
 app.get('/api', function(req, response) {
-    return response.status(200).json({api: 'SolderJS', version: '0.1', stream: 'beta'}).end();
+    return response.status(200).json({api: 'SolderJS', version: '1.0.0', stream: 'stable'}).end();
 });
 
 app.get('/api/modpack', function(req, response) {
