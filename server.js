@@ -9,15 +9,10 @@ const url = require('url');
 const _ = require('underscore');
 const winston = require('winston');
 
-let rclient;
+const rclient = redis.createClient(config.redis.port, config.redis.host, {no_ready_check: config.redis.no_ready_check});
 
-if (process.env.REDISCLOUD_URL) {
-    const redisUrl = url.parse(process.env.REDISCLOUD_URL);
-    rclient = redis.createClient(redisUrl.port, redisUrl.hostname, {no_ready_check: true});
-
-    rclient.auth(redisUrl.auth.split(':')[1]);
-} else {
-    rclient = redis.createClient(config.redis.port, config.redis.host);
+if (config.redis.password) {
+    rclient.auth(config.redis.password);
 }
 
 const logger = winston.createLogger({
