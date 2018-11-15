@@ -42,6 +42,7 @@ const pool = new pg.Pool({
 const app = express();
 
 app.enable('trust proxy');
+app.disable('x-powered-by');
 
 // Set key and client if available
 app.use(function(req, response, next) {
