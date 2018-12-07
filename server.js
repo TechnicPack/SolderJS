@@ -620,6 +620,6 @@ function log(level, system, msg, meta) {
         }
     }
 }
-app.listen(config.web.port, function() {
+app.listen(config.web.port, config.web.host, function() {
     log('info', 'Server', 'Server running on port ' + config.web.port);
 });
