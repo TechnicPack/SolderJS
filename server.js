@@ -5,7 +5,6 @@ const express = require('express');
 const pg = require('pg');
 const redis = require('redis');
 const async = require('async');
-const _ = require('underscore');
 const winston = require('winston');
 
 const rclient = redis.createClient(config.redis.port, config.redis.host, {no_ready_check: config.redis.no_ready_check});
@@ -55,7 +54,7 @@ app.use(function(req, response, next) {
                     return callback(err, null);
                 }
 
-                if (_.contains(keys, key)) {
+                if (keys.includes(key)) {
                     req.access.key = {authed: true, key: key};
                     log('info', 'Auth', 'Authenticated API key: ' + key);
                 }
@@ -68,7 +67,7 @@ app.use(function(req, response, next) {
                     return callback(err, null);
                 }
 
-                if (_.contains(clients, cid)) {
+                if (clients.includes(cid)) {
                     req.access.client = {authed: true, client: cid};
                     log('info', 'Auth', 'Authenticated Client ID: ' + cid);
                     getClientAccess(cid, function(err, modpacks) {
@@ -114,13 +113,13 @@ app.get('/api/modpack', function(req, response) {
         apiResponse.modpacks = {};
         apiResponse.mirror_url = config.url.mirror;
 
-        _.each(modpacks, function(modpack) {
+        modpacks.forEach(function(modpack) {
             if (modpack.hidden) {
                 if (req.access.key.authed) {
                     apiResponse.modpacks[modpack.slug] = modpack.name;
                 }
             } else if (modpack.private) {
-                if (req.access.key.authed || _.contains(req.access.client.modpacks, modpack.id)) {
+                if (req.access.key.authed || req.access.client.modpacks.includes(modpack.id)) {
                     apiResponse.modpacks[modpack.slug] = modpack.name;
                 }
             } else {
@@ -197,7 +196,7 @@ app.get('/api/modpack/:modpack/:build', function(req, response) {
                 }
 
                 if (build) {
-                    if (build.is_published && (!build.private || ( req.access.key.authed || _.contains(req.access.client.modpacks, modpack.id)))) {
+                    if (build.is_published && (!build.private || ( req.access.key.authed || req.access.client.modpacks.includes(modpack.id)))) {
                         getBuildResponse(modpack, build, options, function(err, bObject) {
                             return response.status(200).json(bObject);
                         });
@@ -253,8 +252,8 @@ function getModpackResponse(modpack, req, callback) {
             return log('error', 'Modpack', 'Failed to get builds while building modpack response', err);
         }
 
-        _.each(builds, function(build) {
-            if (build.is_published && (!build.private || ( req.access.key.authed || _.contains(req.access.client.modpacks, modpack.id)))) {
+        builds.forEach(function(build) {
+            if (build.is_published && (!build.private || ( req.access.key.authed || req.access.client.modpacks.includes(modpack.id)))) {
                 mObject.builds.push(build.version);
             }
         });
@@ -280,7 +279,7 @@ function getBuildResponse(modpack, build, options, callback) {
             return log('error', 'Mods', 'Failed to get mods while building build response', err);
         }
 
-        _.each(mods, function(mod) {
+        mods.forEach(function(mod) {
             const modObject = {
                 name: mod.name,
                 version: mod.version,
@@ -328,11 +327,7 @@ function getKeys(callback) {
                         return log('error', 'Database', 'Error running query', err);
                     }
 
-                    const keys = [];
-
-                    _.each(result.rows, function(key) {
-                        keys.push(key.api_key);
-                    });
+                    const keys = result.rows.map(row => row.api_key);
 
                     rclient.set('api:access:keys', JSON.stringify(keys));
                     rclient.expire('api:access:keys', 60);
@@ -366,11 +361,7 @@ function getClients(callback) {
                         return log('error', 'Database', 'Error running query', err);
                     }
 
-                    const clients = [];
-
-                    _.each(result.rows, function(client) {
-                        clients.push(client.uuid);
-                    });
+                    const clients = result.rows.map(row => row.uuid);
 
                     rclient.set('api:access:clients', JSON.stringify(clients));
                     rclient.expire('api:access:clients', 60);
@@ -400,11 +391,8 @@ function getClientAccess(cid, callback) {
                 return log('error', 'Database', 'Error running query', err);
             }
 
-            const modpacks = [];
+            const modpacks = result.rows.map(row => row.modpack_id);
 
-            _.each(result.rows, function(modpack) {
-                modpacks.push(modpack.modpack_id);
-            });
             callback(null, modpacks);
         });
     });

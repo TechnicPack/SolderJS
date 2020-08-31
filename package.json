@@ -7,7 +7,6 @@
     "express": "^4.16.4",
     "pg": "^8.3.3",
     "redis": "^3.0.2",
-    "underscore": "^1.10.2",
     "winston": "^3.3.3"
   },
   "engines": {
