@@ -42,6 +42,18 @@ app.use(function(req, response, next) {
     const key = req.query.k;
     const cid = req.query.cid;
 
+    /*
+     * The full format is:
+     * {
+     *   client: {
+     *     authed: false/true,
+     *     modpacks: [id1, id2, ...]
+     *   },
+     *   key: {
+     *     authed: false/true,
+     *     key: null/string
+     * }
+     */
     req.access = {
         client: { authed: false },
         key: { authed: false }
@@ -57,6 +69,8 @@ app.use(function(req, response, next) {
                 if (keys.includes(key)) {
                     req.access.key = {authed: true, key: key};
                     log('info', 'Auth', 'Authenticated API key: ' + key);
+                } else {
+                    req.access.key.key = null;
                 }
                 return callback();
             });
@@ -78,8 +92,8 @@ app.use(function(req, response, next) {
                         log('info', 'Auth', 'Assigned modpack access for client', modpacks);
                         return callback();
                     });
-
                 } else {
+                    req.access.client.modpacks = [];
                     return callback();
                 }
 
