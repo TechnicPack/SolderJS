@@ -479,7 +479,7 @@ function getBuilds(modpack, callback) {
                     return log('error', 'Database', 'Error fetching client from pool', err);
                 }
 
-                const query = 'SELECT * FROM builds WHERE modpack_id=$1::int';
+                const query = 'SELECT * FROM builds WHERE modpack_id=$1::int ORDER BY id ASC';
                 const data = [modpack.id];
 
                 client.query(query, data, function(err, result) {
