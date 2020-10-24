@@ -16,7 +16,7 @@ config.redis.port = parseInt(process.env.REDIS_PORT) || 6379;
 config.redis.password = process.env.REDIS_PASSWORD || null;
 config.redis.no_ready_check = Boolean(parseInt(process.env.REDIS_NO_READY_CHECK)) || false;
 
-config.url.mirror = 'http://mirror.technicpack.net/Technic/';
+config.url.mirror = 'https://mirror.technicpack.net/Technic/';
 
 config.pg.options = process.env.DATABASE_URL || 'localhost';
 
