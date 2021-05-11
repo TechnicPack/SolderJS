@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "async": "^3.2.0",
-    "dotenv": "^9.0.1",
+    "dotenv": "^9.0.2",
     "express": "^4.16.4",
     "pg": "^8.6.0",
     "redis": "^3.1.2",
