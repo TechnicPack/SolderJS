@@ -248,13 +248,6 @@ function getModpackResponse(modpack, req, callback) {
     const mObject = {
         name: modpack.slug,
         display_name: modpack.name,
-        url: modpack.url,
-        icon: modpack.icon_url,
-        icon_md5: modpack.icon_md5,
-        logo: modpack.logo_url,
-        logo_md5: modpack.logo_md5,
-        background: modpack.background_url,
-        background_md5: modpack.background_md5,
         recommended: modpack.recommended,
         latest: modpack.latest,
         builds: []
@@ -280,7 +273,6 @@ function getBuildResponse(modpack, build, options, callback) {
 
     const bObject = {
         minecraft: build.minecraft,
-        minecraft_md5: build.minecraft_md5,
         forge: build.forge,
         java: build.min_java,
         memory: build.min_memory ? build.min_memory.toString() : null,
