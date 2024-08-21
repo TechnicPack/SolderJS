@@ -3,5 +3,6 @@
   "extends": [
     "config:best-practices",
     ":separateMajorReleases"
-  ]
+  ],
+  "rangeStrategy": "bump"
 }
