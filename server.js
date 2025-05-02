@@ -621,6 +621,9 @@ function log(level, system, msg, meta) {
     }
   }
 }
-app.listen(config.web.port, config.web.host, function () {
+app.listen(config.web.port, config.web.host, (error) => {
+  if (error) {
+    throw error;
+  }
   log('info', 'Server', 'Server running on port ' + config.web.port);
 });
