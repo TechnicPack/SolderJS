@@ -173,7 +173,7 @@ app.get('/api/modpack', function (req, response) {
   });
 });
 
-app.get('/api/modpack/(:modpack)', function (req, response) {
+app.get('/api/modpack/:modpack', function (req, response) {
   const slug = req.params.modpack;
 
   getModpack(slug, function (err, modpack) {
@@ -231,7 +231,7 @@ app.get('/api/modpack/:modpack/:build', function (req, response) {
   });
 });
 
-app.get('/api/verify/(:key)', function (req, response) {
+app.get('/api/verify/:key', function (req, response) {
   const key = req.params.key;
 
   getKey(key, function (err, key) {
