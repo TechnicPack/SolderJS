@@ -1,11 +1,11 @@
-SolderJS
-========
+# SolderJS
+
 SolderJS is an alternative API for [Solder](https://github.com/TechnicPack/TechnicSolder) designed for speed and scalability. It requires a pre-existing Solder install and is currently only designed to work with PostgreSQL. You should not be using this unless you know what you are doing.
 
 We offer **no support** for SolderJS. Do not ask.
 
-License
--------
+## License
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Syndicate LLC
