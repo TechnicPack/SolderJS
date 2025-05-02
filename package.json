@@ -3,17 +3,17 @@
   "version": "1.0.0",
   "dependencies": {
     "async": "^3.2.6",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "pg": "^8.13.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "pg": "^8.15.6",
     "redis": "^3.1.2",
-    "winston": "^3.15.0"
+    "winston": "^3.17.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "npm@10.9.0+sha512.65a9c38a8172948f617a53619762cd77e12b9950fe1f9239debcb8d62c652f2081824b986fee7c0af6c0a7df615becebe4bf56e17ec27214a87aa29d9e038b4b",
   "devDependencies": {
-    "prettier": "3.3.3"
+    "prettier": "3.5.3"
   }
 }
