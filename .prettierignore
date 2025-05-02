@@ -1,6 +1,7 @@
-# Ignore artifacts:
-build
-coverage
-
+.eslintrc.js
 .github
+.idea
+.vscode
+package-lock.json
+package.json
 renovate.json
