@@ -122,7 +122,7 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect('/api');
+  res.redirect('/api/');
 });
 
 app.get('/api', (req, res) => {
