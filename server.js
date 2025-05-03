@@ -51,11 +51,10 @@ app.use((req, res, next) => {
    *   },
    *   key: {
    *     authed: false/true,
-   *     key: null/string
    * }
    */
   req.access = {
-    client: { authed: false },
+    client: { authed: false, modpacks: [] },
     key: { authed: false },
   };
 
@@ -74,11 +73,10 @@ app.use((req, res, next) => {
           }
 
           if (keys.includes(key)) {
-            req.access.key = { authed: true, key: key };
+            req.access.key.authed = true;
             log('info', 'Auth', 'Authenticated API key: ' + key);
-          } else {
-            req.access.key.key = null;
           }
+
           callback();
         });
       },
@@ -95,19 +93,19 @@ app.use((req, res, next) => {
           }
 
           if (clients.includes(cid)) {
-            req.access.client = { authed: true, client: cid };
-            log('info', 'Auth', 'Authenticated Client ID: ' + cid);
+            req.access.client.authed = true;
+            log('info', 'Auth', 'Authenticated client ID: ' + cid);
             getClientAccess(cid, (err, modpacks) => {
               if (err) {
                 callback(err, null);
                 return;
               }
+
               req.access.client.modpacks = modpacks;
               log('info', 'Auth', 'Assigned modpack access for client', modpacks);
               callback();
             });
           } else {
-            req.access.client.modpacks = [];
             callback();
           }
         });
