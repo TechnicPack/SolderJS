@@ -178,7 +178,7 @@ app.get('/api/modpack/:modpack', (req, res) => {
 
   getModpack(slug, (err, modpack) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occured' });
+      return res.status(500).json({ error: 'An error has occurred' });
     }
 
     if (modpack) {
@@ -199,13 +199,13 @@ app.get('/api/modpack/:modpack/:build', (req, res) => {
 
   getModpack(slug, (err, modpack) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occured' });
+      return res.status(500).json({ error: 'An error has occurred' });
     }
 
     if (modpack) {
       getBuild(modpack, build, (err, build) => {
         if (err) {
-          return res.status(500).json({ error: 'An error has occured' });
+          return res.status(500).json({ error: 'An error has occurred' });
         }
 
         if (build) {
@@ -232,7 +232,7 @@ app.get('/api/verify/:key', (req, res) => {
 
   getKey(key, (err, key) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occured' });
+      return res.status(500).json({ error: 'An error has occurred' });
     }
 
     if (key) {
