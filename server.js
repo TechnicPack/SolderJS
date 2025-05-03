@@ -266,6 +266,18 @@ app.get('/api/verify/:key', (req, res) => {
   });
 });
 
+// 404 handler
+app.use((req, res) => {
+  res.sendStatus(404);
+});
+
+// General error handler
+// eslint-disable-next-line no-unused-vars -- Express.js requires error handling middleware to have 4 arguments
+app.use((err, req, res, next) => {
+  log('error', 'Server', 'Uncaught error', { stack: err.stack });
+  res.status(500).json({ error: 'An unexpected error has occurred' });
+});
+
 function getModpackResponse(modpack, req, callback) {
   const mObject = {
     name: modpack.slug,
