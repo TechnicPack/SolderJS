@@ -38,7 +38,7 @@ app.enable('trust proxy');
 app.disable('x-powered-by');
 
 // Set key and client if available
-app.use((req, response, next) => {
+app.use((req, res, next) => {
   const key = req.query.k;
   const cid = req.query.cid;
 
@@ -109,11 +109,11 @@ app.use((req, response, next) => {
   );
 });
 
-app.get('/api', (req, response) => {
-  response.status(200).json({ api: 'SolderJS', version: '1.0.0', stream: 'stable' });
+app.get('/api', (req, res) => {
+  res.status(200).json({ api: 'SolderJS', version: '1.0.0', stream: 'stable' });
 });
 
-app.get('/api/modpack', (req, response) => {
+app.get('/api/modpack', (req, res) => {
   const options = {
     include: req.query.include,
   };
@@ -122,7 +122,7 @@ app.get('/api/modpack', (req, response) => {
 
   getModpacks((err, modpacks) => {
     if (err) {
-      return response.status(500).json({ error: 'An error has occurred' });
+      return res.status(500).json({ error: 'An error has occurred' });
     }
 
     apiResponse.modpacks = {};
@@ -164,32 +164,32 @@ app.get('/api/modpack', (req, response) => {
             return log('error', 'Database', 'Error retrieving builds for modpacks');
           }
 
-          return response.status(200).json(apiResponse);
+          return res.status(200).json(apiResponse);
         },
       );
     } else {
-      return response.status(200).json(apiResponse);
+      return res.status(200).json(apiResponse);
     }
   });
 });
 
-app.get('/api/modpack/:modpack', (req, response) => {
+app.get('/api/modpack/:modpack', (req, res) => {
   const slug = req.params.modpack;
 
   getModpack(slug, (err, modpack) => {
     if (err) {
-      return response.status(500).json({ error: 'An error has occured' });
+      return res.status(500).json({ error: 'An error has occured' });
     }
 
     if (modpack) {
-      getModpackResponse(modpack, req, (err, res) => response.status(200).json(res));
+      getModpackResponse(modpack, req, (err, res) => res.status(200).json(res));
     } else {
-      return response.status(404).json({ status: 404, error: 'Modpack does not exist' });
+      return res.status(404).json({ status: 404, error: 'Modpack does not exist' });
     }
   });
 });
 
-app.get('/api/modpack/:modpack/:build', (req, response) => {
+app.get('/api/modpack/:modpack/:build', (req, res) => {
   const slug = req.params.modpack;
   const build = req.params.build;
 
@@ -199,13 +199,13 @@ app.get('/api/modpack/:modpack/:build', (req, response) => {
 
   getModpack(slug, (err, modpack) => {
     if (err) {
-      return response.status(500).json({ error: 'An error has occured' });
+      return res.status(500).json({ error: 'An error has occured' });
     }
 
     if (modpack) {
       getBuild(modpack, build, (err, build) => {
         if (err) {
-          return response.status(500).json({ error: 'An error has occured' });
+          return res.status(500).json({ error: 'An error has occured' });
         }
 
         if (build) {
@@ -213,32 +213,32 @@ app.get('/api/modpack/:modpack/:build', (req, response) => {
             build.is_published &&
             (!build.private || req.access.key.authed || req.access.client.modpacks.includes(modpack.id))
           ) {
-            getBuildResponse(modpack, build, options, (err, bObject) => response.status(200).json(bObject));
+            getBuildResponse(modpack, build, options, (err, bObject) => res.status(200).json(bObject));
           } else {
-            return response.status(403).json({ status: 403, error: 'You are not authorized to view this build.' });
+            return res.status(403).json({ status: 403, error: 'You are not authorized to view this build.' });
           }
         } else {
-          return response.status(404).json({ status: 404, error: 'Build does not exist.' });
+          return res.status(404).json({ status: 404, error: 'Build does not exist.' });
         }
       });
     } else {
-      return response.status(404).json({ status: 404, error: 'Modpack does not exist' });
+      return res.status(404).json({ status: 404, error: 'Modpack does not exist' });
     }
   });
 });
 
-app.get('/api/verify/:key', (req, response) => {
+app.get('/api/verify/:key', (req, res) => {
   const key = req.params.key;
 
   getKey(key, (err, key) => {
     if (err) {
-      return response.status(500).json({ error: 'An error has occured' });
+      return res.status(500).json({ error: 'An error has occured' });
     }
 
     if (key) {
-      return response.status(200).json({ valid: 'Key Validated.', name: key.name, created_at: key.created_at });
+      return res.status(200).json({ valid: 'Key Validated.', name: key.name, created_at: key.created_at });
     } else {
-      return response.status(200).json({ error: 'Key does not exist' });
+      return res.status(200).json({ error: 'Key does not exist' });
     }
   });
 });
@@ -617,6 +617,7 @@ function log(level, system, msg, meta) {
     }
   }
 }
+
 app.listen(config.web.port, config.web.host, (error) => {
   if (error) {
     throw error;
