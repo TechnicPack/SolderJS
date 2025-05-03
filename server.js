@@ -418,7 +418,7 @@ function getModpacks(callback) {
           return log('error', 'Database', 'Error fetching client from pool', err);
         }
 
-        const query = 'SELECT * FROM modpacks ORDER BY id ASC';
+        const query = 'SELECT * FROM modpacks ORDER BY id';
 
         client.query(query, (err, result) => {
           done();
@@ -452,7 +452,7 @@ function getModpack(slug, callback) {
           return log('error', 'Database', 'Error fetching client from pool', err);
         }
 
-        const query = 'SELECT * FROM modpacks WHERE slug=$1 ORDER BY id ASC LIMIT 1';
+        const query = 'SELECT * FROM modpacks WHERE slug=$1 ORDER BY id LIMIT 1';
         const data = [slug];
 
         client.query(query, data, (err, result) => {
@@ -487,7 +487,7 @@ function getBuilds(modpack, callback) {
           return log('error', 'Database', 'Error fetching client from pool', err);
         }
 
-        const query = 'SELECT * FROM builds WHERE modpack_id=$1::int ORDER BY id ASC';
+        const query = 'SELECT * FROM builds WHERE modpack_id=$1::int ORDER BY id';
         const data = [modpack.id];
 
         client.query(query, data, (err, result) => {
@@ -558,7 +558,7 @@ function getMods(build, callback) {
         }
 
         const query =
-          'SELECT mods.id, * FROM build_modversion AS bmv INNER JOIN modversions AS mv ON mv.id = bmv.modversion_id INNER JOIN mods ON mods.id = mv.mod_id WHERE bmv.build_id=$1::int ORDER BY mods.name ASC';
+          'SELECT mods.id, * FROM build_modversion AS bmv INNER JOIN modversions AS mv ON mv.id = bmv.modversion_id INNER JOIN mods ON mods.id = mv.mod_id WHERE bmv.build_id=$1::int ORDER BY mods.name';
         const data = [build.id];
 
         client.query(query, data, (err, result) => {
