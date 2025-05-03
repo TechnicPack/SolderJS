@@ -238,7 +238,7 @@ app.get('/api/verify/:key', (req, res) => {
     if (key) {
       return res.status(200).json({ valid: true, name: key.name, created_at: key.created_at });
     } else {
-      return res.status(200).json({ error: 'Key does not exist' });
+      return res.status(404).json({ error: 'Key does not exist' });
     }
   });
 });
