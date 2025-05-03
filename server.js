@@ -64,7 +64,8 @@ app.use((req, res, next) => {
       (callback) => {
         getKeys((err, keys) => {
           if (err) {
-            return callback(err, null);
+            callback(err, null);
+            return;
           }
 
           if (keys.includes(key)) {
@@ -73,13 +74,14 @@ app.use((req, res, next) => {
           } else {
             req.access.key.key = null;
           }
-          return callback();
+          callback();
         });
       },
       (callback) => {
         getClients((err, clients) => {
           if (err) {
-            return callback(err, null);
+            callback(err, null);
+            return;
           }
 
           if (clients.includes(cid)) {
@@ -87,15 +89,16 @@ app.use((req, res, next) => {
             log('info', 'Auth', 'Authenticated Client ID: ' + cid);
             getClientAccess(cid, (err, modpacks) => {
               if (err) {
-                return callback(err, null);
+                callback(err, null);
+                return;
               }
               req.access.client.modpacks = modpacks;
               log('info', 'Auth', 'Assigned modpack access for client', modpacks);
-              return callback();
+              callback();
             });
           } else {
             req.access.client.modpacks = [];
-            return callback();
+            callback();
           }
         });
       },
@@ -122,7 +125,8 @@ app.get('/api/modpack', (req, res) => {
 
   getModpacks((err, modpacks) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occurred' });
+      res.status(500).json({ error: 'An error has occurred' });
+      return;
     }
 
     apiResponse.modpacks = {};
@@ -150,7 +154,8 @@ app.get('/api/modpack', (req, res) => {
           if (apiResponse.modpacks[modpack.slug]) {
             getModpackResponse(modpack, req, (err, mObject) => {
               if (err) {
-                return callback(err);
+                callback(err);
+                return;
               }
               apiResponse.modpacks[modpack.slug] = mObject;
               callback();
@@ -161,14 +166,15 @@ app.get('/api/modpack', (req, res) => {
         },
         (err) => {
           if (err) {
-            return log('error', 'Database', 'Error retrieving builds for modpacks');
+            log('error', 'Database', 'Error retrieving builds for modpacks');
+            return;
           }
 
-          return res.status(200).json(apiResponse);
+          res.status(200).json(apiResponse);
         },
       );
     } else {
-      return res.status(200).json(apiResponse);
+      res.status(200).json(apiResponse);
     }
   });
 });
@@ -178,13 +184,14 @@ app.get('/api/modpack/:modpack', (req, res) => {
 
   getModpack(slug, (err, modpack) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occurred' });
+      res.status(500).json({ error: 'An error has occurred' });
+      return;
     }
 
     if (modpack) {
       getModpackResponse(modpack, req, (err, res) => res.status(200).json(res));
     } else {
-      return res.status(404).json({ status: 404, error: 'Modpack does not exist' });
+      res.status(404).json({ status: 404, error: 'Modpack does not exist' });
     }
   });
 });
@@ -199,13 +206,15 @@ app.get('/api/modpack/:modpack/:build', (req, res) => {
 
   getModpack(slug, (err, modpack) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occurred' });
+      res.status(500).json({ error: 'An error has occurred' });
+      return;
     }
 
     if (modpack) {
       getBuild(modpack, build, (err, build) => {
         if (err) {
-          return res.status(500).json({ error: 'An error has occurred' });
+          res.status(500).json({ error: 'An error has occurred' });
+          return;
         }
 
         if (build) {
@@ -215,14 +224,14 @@ app.get('/api/modpack/:modpack/:build', (req, res) => {
           ) {
             getBuildResponse(modpack, build, options, (err, bObject) => res.status(200).json(bObject));
           } else {
-            return res.status(403).json({ status: 403, error: 'You are not authorized to view this build.' });
+            res.status(403).json({ status: 403, error: 'You are not authorized to view this build.' });
           }
         } else {
-          return res.status(404).json({ status: 404, error: 'Build does not exist.' });
+          res.status(404).json({ status: 404, error: 'Build does not exist.' });
         }
       });
     } else {
-      return res.status(404).json({ status: 404, error: 'Modpack does not exist' });
+      res.status(404).json({ status: 404, error: 'Modpack does not exist' });
     }
   });
 });
@@ -232,13 +241,14 @@ app.get('/api/verify/:key', (req, res) => {
 
   getKey(key, (err, key) => {
     if (err) {
-      return res.status(500).json({ error: 'An error has occurred' });
+      res.status(500).json({ error: 'An error has occurred' });
+      return;
     }
 
     if (key) {
-      return res.status(200).json({ valid: true, name: key.name, created_at: key.created_at });
+      res.status(200).json({ valid: true, name: key.name, created_at: key.created_at });
     } else {
-      return res.status(404).json({ error: 'Key does not exist' });
+      res.status(404).json({ error: 'Key does not exist' });
     }
   });
 });
@@ -255,7 +265,8 @@ function getModpackResponse(modpack, req, callback) {
   getBuilds(modpack, (err, builds) => {
     if (err) {
       callback(err, null);
-      return log('error', 'Modpack', 'Failed to get builds while building modpack response', err);
+      log('error', 'Modpack', 'Failed to get builds while building modpack response', err);
+      return;
     }
 
     builds.forEach((build) => {
@@ -267,7 +278,7 @@ function getModpackResponse(modpack, req, callback) {
       }
     });
 
-    return callback(err, mObject);
+    callback(err, mObject);
   });
 }
 
@@ -283,7 +294,8 @@ function getBuildResponse(modpack, build, options, callback) {
   getMods(build, (err, mods) => {
     if (err) {
       callback(err, null);
-      return log('error', 'Mods', 'Failed to get mods while building build response', err);
+      log('error', 'Mods', 'Failed to get mods while building build response', err);
+      return;
     }
 
     mods.forEach((mod) => {
@@ -308,7 +320,7 @@ function getBuildResponse(modpack, build, options, callback) {
       bObject.mods.push(modObject);
     });
 
-    return callback(err, bObject);
+    callback(err, bObject);
   });
 }
 
@@ -321,7 +333,8 @@ function getKeys(callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query = 'SELECT * FROM keys';
@@ -331,7 +344,8 @@ function getKeys(callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           const keys = result.rows.map((row) => row.api_key);
@@ -355,7 +369,8 @@ function getClients(callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query = 'SELECT * FROM clients';
@@ -365,7 +380,8 @@ function getClients(callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           const clients = result.rows.map((row) => row.uuid);
@@ -384,7 +400,8 @@ function getClientAccess(cid, callback) {
   pool.connect((err, client, done) => {
     if (err) {
       callback(err, null);
-      return log('error', 'Database', 'Error fetching client from pool', err);
+      log('error', 'Database', 'Error fetching client from pool', err);
+      return;
     }
 
     const query =
@@ -396,7 +413,8 @@ function getClientAccess(cid, callback) {
 
       if (err) {
         callback(err, null);
-        return log('error', 'Database', 'Error running query', err);
+        log('error', 'Database', 'Error running query', err);
+        return;
       }
 
       const modpacks = result.rows.map((row) => row.modpack_id);
@@ -415,7 +433,8 @@ function getModpacks(callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query = 'SELECT * FROM modpacks ORDER BY id';
@@ -425,7 +444,8 @@ function getModpacks(callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           if (result.rows) {
@@ -449,7 +469,8 @@ function getModpack(slug, callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query = 'SELECT * FROM modpacks WHERE slug=$1 ORDER BY id LIMIT 1';
@@ -460,7 +481,8 @@ function getModpack(slug, callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           if (result.rows[0]) {
@@ -484,7 +506,8 @@ function getBuilds(modpack, callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query = 'SELECT * FROM builds WHERE modpack_id=$1::int ORDER BY id';
@@ -495,7 +518,8 @@ function getBuilds(modpack, callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           if (result.rows) {
@@ -519,7 +543,8 @@ function getBuild(modpack, build, callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query = 'SELECT * FROM builds WHERE modpack_id=$1::int AND version=$2 LIMIT 1';
@@ -530,7 +555,8 @@ function getBuild(modpack, build, callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           if (result.rows[0]) {
@@ -554,7 +580,8 @@ function getMods(build, callback) {
       pool.connect((err, client, done) => {
         if (err) {
           callback(err, null);
-          return log('error', 'Database', 'Error fetching client from pool', err);
+          log('error', 'Database', 'Error fetching client from pool', err);
+          return;
         }
 
         const query =
@@ -566,7 +593,8 @@ function getMods(build, callback) {
 
           if (err) {
             callback(err, null);
-            return log('error', 'Database', 'Error running query', err);
+            log('error', 'Database', 'Error running query', err);
+            return;
           }
 
           if (result.rows) {
@@ -585,7 +613,8 @@ function getKey(key, callback) {
   pool.connect((err, client, done) => {
     if (err) {
       callback(err, null);
-      return log('error', 'Database', 'Error fetching client from pool', err);
+      log('error', 'Database', 'Error fetching client from pool', err);
+      return;
     }
 
     const query = 'SELECT * FROM keys WHERE api_key=$1 LIMIT 1';
@@ -596,7 +625,8 @@ function getKey(key, callback) {
 
       if (err) {
         callback(err, null);
-        return log('error', 'Database', 'Error running query', err);
+        log('error', 'Database', 'Error running query', err);
+        return;
       }
 
       if (result.rows[0]) {
