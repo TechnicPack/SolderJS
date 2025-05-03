@@ -62,6 +62,11 @@ app.use((req, res, next) => {
   async.parallel(
     [
       (callback) => {
+        if (!key) {
+          callback();
+          return;
+        }
+
         getKeys((err, keys) => {
           if (err) {
             callback(err, null);
@@ -78,6 +83,11 @@ app.use((req, res, next) => {
         });
       },
       (callback) => {
+        if (!cid) {
+          callback();
+          return;
+        }
+
         getClients((err, clients) => {
           if (err) {
             callback(err, null);
