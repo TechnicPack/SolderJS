@@ -201,7 +201,7 @@ app.get('/api/modpack/:modpack', (req, res) => {
     }
 
     if (modpack) {
-      getModpackResponse(modpack, req, (err, res) => res.status(200).json(res));
+      getModpackResponse(modpack, req, (err, result) => res.status(200).json(result));
     } else {
       res.status(404).json({ status: 404, error: 'Modpack does not exist' });
     }
