@@ -120,6 +120,10 @@ app.use((req, res, next) => {
   );
 });
 
+app.get('/', (req, res) => {
+  res.redirect('/api');
+});
+
 app.get('/api', (req, res) => {
   res.status(200).json({ api: 'SolderJS', version: '1.0.0', stream: 'stable' });
 });
