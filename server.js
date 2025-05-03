@@ -18,9 +18,10 @@ if (config.redis.password) {
 const logger = winston.createLogger({
   level: config.logging_level,
   format: winston.format.combine(
+    winston.format.colorize(),
     winston.format.timestamp(),
-    winston.format.printf((info) => {
-      return `${info.timestamp} [${info.level}] ${info.message}`;
+    winston.format.printf(({ timestamp, level, message, ...meta }) => {
+      return `${timestamp} [${level}] ${message}${Object.keys(meta).length ? ` meta=${JSON.stringify(meta)}` : ''}`;
     }),
   ),
   transports: [new winston.transports.Console()],
