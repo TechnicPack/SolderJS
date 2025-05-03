@@ -210,7 +210,7 @@ app.get('/api/modpack/:modpack', (req, res) => {
 
 app.get('/api/modpack/:modpack/:build', (req, res) => {
   const slug = req.params.modpack;
-  const build = req.params.build;
+  const buildName = req.params.build;
 
   const options = {
     include: req.query.include,
@@ -223,7 +223,7 @@ app.get('/api/modpack/:modpack/:build', (req, res) => {
     }
 
     if (modpack) {
-      getBuild(modpack, build, (err, build) => {
+      getBuild(modpack, buildName, (err, build) => {
         if (err) {
           res.status(500).json({ error: 'An error has occurred' });
           return;
@@ -251,14 +251,14 @@ app.get('/api/modpack/:modpack/:build', (req, res) => {
 app.get('/api/verify/:key', (req, res) => {
   const key = req.params.key;
 
-  getKey(key, (err, key) => {
+  getKey(key, (err, keyInfo) => {
     if (err) {
       res.status(500).json({ error: 'An error has occurred' });
       return;
     }
 
-    if (key) {
-      res.status(200).json({ valid: true, name: key.name, created_at: key.created_at });
+    if (keyInfo) {
+      res.status(200).json({ valid: true, name: keyInfo.name, created_at: keyInfo.created_at });
     } else {
       res.status(404).json({ error: 'Key does not exist' });
     }
