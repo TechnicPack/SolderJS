@@ -1,6 +1,6 @@
 {
   "name": "solderjs",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "dependencies": {
     "async": "^3.2.6",
     "dotenv": "^16.5.0",
