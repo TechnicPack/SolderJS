@@ -45,19 +45,18 @@ app.use((req, res, next) => {
 
   /*
    * The full format is:
-   * {
-   *   client: {
-   *     authed: false/true,
-   *     modpacks: [id1, id2, ...]
-   *   },
-   *   key: {
-   *     authed: false/true,
+   *
+   * res.locals.client: {
+   *   authed: false/true,
+   *   modpacks: [id1, id2, ...]
+   * }
+   *
+   * res.locals.key: {
+   *   authed: false/true,
    * }
    */
-  req.access = {
-    client: { authed: false, modpacks: [] },
-    key: { authed: false },
-  };
+  res.locals.client = { authed: false, modpacks: [] };
+  res.locals.key = { authed: false };
 
   async.parallel(
     [
@@ -74,7 +73,7 @@ app.use((req, res, next) => {
           }
 
           if (keys.includes(key)) {
-            req.access.key.authed = true;
+            res.locals.key.authed = true;
             log('info', 'Auth', 'Authenticated API key: ' + key);
           }
 
@@ -94,7 +93,7 @@ app.use((req, res, next) => {
           }
 
           if (clients.includes(cid)) {
-            req.access.client.authed = true;
+            res.locals.client.authed = true;
             log('info', 'Auth', 'Authenticated client ID: ' + cid);
             getClientAccess(cid, (err, modpacks) => {
               if (err) {
@@ -102,7 +101,7 @@ app.use((req, res, next) => {
                 return;
               }
 
-              req.access.client.modpacks = modpacks;
+              res.locals.client.modpacks = modpacks;
               log('info', 'Auth', 'Assigned modpack access for client', modpacks);
               callback();
             });
@@ -147,11 +146,11 @@ app.get('/api/modpack', (req, res) => {
 
     modpacks.forEach((modpack) => {
       if (modpack.hidden) {
-        if (req.access.key.authed) {
+        if (res.locals.key.authed) {
           apiResponse.modpacks[modpack.slug] = modpack.name;
         }
       } else if (modpack.private) {
-        if (req.access.key.authed || req.access.client.modpacks.includes(modpack.id)) {
+        if (res.locals.key.authed || res.locals.client.modpacks.includes(modpack.id)) {
           apiResponse.modpacks[modpack.slug] = modpack.name;
         }
       } else {
@@ -165,7 +164,7 @@ app.get('/api/modpack', (req, res) => {
         modpacks,
         (modpack, callback) => {
           if (apiResponse.modpacks[modpack.slug]) {
-            getModpackResponse(modpack, req, (err, mObject) => {
+            getModpackResponse(modpack, res, (err, mObject) => {
               if (err) {
                 callback(err);
                 return;
@@ -202,7 +201,7 @@ app.get('/api/modpack/:modpack', (req, res) => {
     }
 
     if (modpack) {
-      getModpackResponse(modpack, req, (err, result) => res.status(200).json(result));
+      getModpackResponse(modpack, res, (err, result) => res.status(200).json(result));
     } else {
       res.status(404).json({ status: 404, error: 'Modpack does not exist' });
     }
@@ -233,7 +232,7 @@ app.get('/api/modpack/:modpack/:build', (req, res) => {
         if (build) {
           if (
             build.is_published &&
-            (!build.private || req.access.key.authed || req.access.client.modpacks.includes(modpack.id))
+            (!build.private || res.locals.key.authed || res.locals.client.modpacks.includes(modpack.id))
           ) {
             getBuildResponse(modpack, build, options, (err, bObject) => res.status(200).json(bObject));
           } else {
@@ -278,7 +277,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'An unexpected error has occurred' });
 });
 
-function getModpackResponse(modpack, req, callback) {
+function getModpackResponse(modpack, res, callback) {
   const mObject = {
     name: modpack.slug,
     display_name: modpack.name,
@@ -297,7 +296,7 @@ function getModpackResponse(modpack, req, callback) {
     builds.forEach((build) => {
       if (
         build.is_published &&
-        (!build.private || req.access.key.authed || req.access.client.modpacks.includes(modpack.id))
+        (!build.private || res.locals.key.authed || res.locals.client.modpacks.includes(modpack.id))
       ) {
         mObject.builds.push(build.version);
       }
