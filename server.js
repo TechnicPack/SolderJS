@@ -374,8 +374,7 @@ function getKeys(callback) {
 
           const keys = result.rows.map((row) => row.api_key);
 
-          rclient.set('api:access:keys', JSON.stringify(keys));
-          rclient.expire('api:access:keys', 60);
+          rclient.set('api:access:keys', JSON.stringify(keys), 'EX', 60);
 
           callback(null, keys);
         });
@@ -410,8 +409,7 @@ function getClients(callback) {
 
           const clients = result.rows.map((row) => row.uuid);
 
-          rclient.set('api:access:clients', JSON.stringify(clients));
-          rclient.expire('api:access:clients', 60);
+          rclient.set('api:access:clients', JSON.stringify(clients), 'EX', 60);
 
           callback(null, clients);
         });
@@ -473,8 +471,7 @@ function getModpacks(callback) {
           }
 
           if (result.rows) {
-            rclient.set('api:modpacks', JSON.stringify(result.rows));
-            rclient.expire('api:modpacks', 60 * 5);
+            rclient.set('api:modpacks', JSON.stringify(result.rows), 'EX', 60 * 5);
           }
 
           callback(null, result.rows);
@@ -510,8 +507,7 @@ function getModpack(slug, callback) {
           }
 
           if (result.rows[0]) {
-            rclient.set('api:modpack:' + slug, JSON.stringify(result.rows[0]));
-            rclient.expire('api:modpack:' + slug, 60 * 5);
+            rclient.set('api:modpack:' + slug, JSON.stringify(result.rows[0]), 'EX', 60 * 5);
           }
 
           callback(null, result.rows[0]);
@@ -547,8 +543,7 @@ function getBuilds(modpack, callback) {
           }
 
           if (result.rows) {
-            rclient.set('api:modpack:builds:' + modpack.id, JSON.stringify(result.rows));
-            rclient.expire('api:modpack:builds:' + modpack.id, 60 * 5);
+            rclient.set('api:modpack:builds:' + modpack.id, JSON.stringify(result.rows), 'EX', 60 * 5);
           }
 
           callback(null, result.rows);
@@ -584,8 +579,7 @@ function getBuild(modpack, build, callback) {
           }
 
           if (result.rows[0]) {
-            rclient.set('api:build:' + modpack.id + ':' + build, JSON.stringify(result.rows[0]));
-            rclient.expire('api:build:' + modpack.id + ':' + build, 60 * 5);
+            rclient.set('api:build:' + modpack.id + ':' + build, JSON.stringify(result.rows[0]), 'EX', 60 * 5);
           }
 
           callback(null, result.rows[0]);
@@ -622,8 +616,7 @@ function getMods(build, callback) {
           }
 
           if (result.rows) {
-            rclient.set('api:mods:' + build.id, JSON.stringify(result.rows));
-            rclient.expire('api:mods:' + build.id, 60 * 5);
+            rclient.set('api:mods:' + build.id, JSON.stringify(result.rows), 'EX', 60 * 5);
           }
 
           callback(null, result.rows);
