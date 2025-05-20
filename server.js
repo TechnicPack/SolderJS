@@ -665,9 +665,18 @@ function log(level, system, msg, meta) {
   }
 }
 
-app.listen(config.web.port, config.web.host, (error) => {
+const server = app.listen(config.web.port, config.web.host, (error) => {
   if (error) {
     throw error;
   }
-  log('info', 'Server', 'Server running on port ' + config.web.port);
+
+  log('info', 'Server', `Server running on port ${JSON.stringify(server.address())}`);
+});
+
+// Handle pm2 reloads gracefully
+process.on('SIGINT', () => {
+  server.close(() => {
+    log('info', 'Server', 'Server stopped, shutting down');
+    process.exit(0);
+  });
 });
