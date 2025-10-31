@@ -125,7 +125,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api', (req, res) => {
-  res.status(200).json({ api: 'SolderJS', version: '2.2.0', stream: 'stable' });
+  res.status(200).json({ api: 'SolderJS', version: '3.0.0', stream: 'stable' });
 });
 
 app.get('/api/modpack', (req, res) => {
