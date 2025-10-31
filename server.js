@@ -1,4 +1,5 @@
-require('dotenv').config();
+const { loadEnvFile } = require('node:process');
+loadEnvFile();
 
 const config = require('./config');
 const express = require('express');
