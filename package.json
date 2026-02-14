@@ -1,6 +1,6 @@
 {
   "name": "solderjs",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "private": true,
   "dependencies": {
     "async": "^3.2.6",
