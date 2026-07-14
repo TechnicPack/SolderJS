@@ -59,22 +59,18 @@ function createRouter({ data, config, version, verifyLimiter }) {
 
   router.get('/api/modpack', async (req, res) => {
     const modpacks = (await data.getModpacks()).filter((modpack) => isModpackListed(modpack, res.locals));
-    const apiResponse = { modpacks: {}, mirror_url: config.url.mirror };
+    let entries;
 
     if (req.query.include === 'full') {
       const responses = await mapWithConcurrency(modpacks, INCLUDE_FULL_CONCURRENCY, (modpack) =>
         getModpackResponse(modpack, res.locals),
       );
-      modpacks.forEach((modpack, index) => {
-        apiResponse.modpacks[modpack.slug] = responses[index];
-      });
+      entries = modpacks.map((modpack, index) => [modpack.slug, responses[index]]);
     } else {
-      for (const modpack of modpacks) {
-        apiResponse.modpacks[modpack.slug] = modpack.name;
-      }
+      entries = modpacks.map((modpack) => [modpack.slug, modpack.name]);
     }
 
-    res.status(200).json(apiResponse);
+    res.status(200).json({ modpacks: Object.fromEntries(entries), mirror_url: config.url.mirror });
   });
 
   router.get('/api/modpack/:modpack', async (req, res) => {
@@ -93,7 +89,7 @@ function createRouter({ data, config, version, verifyLimiter }) {
   });
 
   router.get('/api/modpack/:modpack/:build', async (req, res) => {
-    if (!validSlug(req.params.modpack) || !validSegment(req.params.build)) {
+    if (!validSlug(req.params.modpack)) {
       sendModpackNotFound(res);
       return;
     }
@@ -104,9 +100,14 @@ function createRouter({ data, config, version, verifyLimiter }) {
       return;
     }
 
+    if (!validSegment(req.params.build)) {
+      sendBuildNotFound(res);
+      return;
+    }
+
     const build = await data.getBuild(modpack, req.params.build);
     if (!build || !canAccessBuild(build, res.locals)) {
-      res.status(404).json({ status: 404, error: 'Build does not exist.' });
+      sendBuildNotFound(res);
       return;
     }
 
@@ -141,6 +142,10 @@ function validSegment(value) {
 
 function sendModpackNotFound(res) {
   res.status(404).json({ status: 404, error: 'Modpack does not exist' });
+}
+
+function sendBuildNotFound(res) {
+  res.status(404).json({ status: 404, error: 'Build does not exist.' });
 }
 
 async function mapWithConcurrency(items, concurrency, mapper) {

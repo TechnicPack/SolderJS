@@ -138,6 +138,19 @@ describe('modpack routes', () => {
     assert.equal(response.body.name, legacy.slug);
   });
 
+  it('preserves special JavaScript property names in modpack listings', async () => {
+    const protoPack = { ...fixtures.modpacks.public, id: 99, slug: '__proto__', name: 'Prototype Pack' };
+    const app = createTestApp({ data: createData({ getModpacks: async () => [protoPack] }) });
+
+    const summary = await request(app).get('/api/modpack').expect(200);
+    const summaryProperty = Object.getOwnPropertyDescriptor(summary.body.modpacks, '__proto__');
+    assert.equal(summaryProperty.value, 'Prototype Pack');
+
+    const full = await request(app).get('/api/modpack?include=full').expect(200);
+    const fullProperty = Object.getOwnPropertyDescriptor(full.body.modpacks, '__proto__');
+    assert.equal(fullProperty.value.name, '__proto__');
+  });
+
   it('rejects malformed and unknown modpack slugs', async () => {
     await request(createTestApp())
       .get(`/api/modpack/${'a'.repeat(256)}`)
@@ -169,6 +182,15 @@ describe('build routes', () => {
   it('enforces parent modpack privacy even when a child build is public', async () => {
     await request(createTestApp()).get('/api/modpack/private-pack/1.0.0').expect(404);
     await request(createTestApp()).get('/api/modpack/private-pack/1.0.0?cid=private-client').expect(200);
+  });
+
+  it('reports invalid build segments as missing builds on an existing modpack', async () => {
+    const expected = { status: 404, error: 'Build does not exist.' };
+
+    await request(createTestApp())
+      .get(`/api/modpack/public-pack/${'a'.repeat(256)}`)
+      .expect(404, expected);
+    await request(createTestApp()).get('/api/modpack/public-pack/%00').expect(404, expected);
   });
 });
 
