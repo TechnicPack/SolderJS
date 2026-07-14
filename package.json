@@ -9,6 +9,7 @@
     "format:check": "biome format .",
     "test": "node --test test/*.test.js",
     "test:integration": "node --test test/integration/*.test.js",
+    "test:integration:local": "SOLDERJS_ALLOW_DESTRUCTIVE_TESTS=1 DATABASE_URL=postgres://solder:solder@localhost:5433/solder REDIS_HOST=localhost REDIS_PORT=6380 pnpm test:integration",
     "test:services:up": "docker compose -f compose.test.yml up -d --wait",
     "test:services:down": "docker compose -f compose.test.yml down -v",
     "check": "pnpm lint && pnpm format:check && pnpm test"

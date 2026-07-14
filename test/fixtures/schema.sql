@@ -1,3 +1,9 @@
+CREATE TABLE solderjs_test_guard (
+  marker text PRIMARY KEY
+);
+
+INSERT INTO solderjs_test_guard (marker) VALUES ('solderjs-integration-v1');
+
 CREATE TABLE modpacks (
   id serial PRIMARY KEY,
   name varchar(255) NOT NULL UNIQUE,

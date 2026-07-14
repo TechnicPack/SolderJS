@@ -3,30 +3,35 @@ const { after, before, beforeEach, describe, it } = require('node:test');
 const { loadConfig } = require('../../config');
 const { createData } = require('../../src/data');
 const { createDatabase } = require('../../src/database');
+const { assertIntegrationEnvironment, assertTestDatabase, createNamespacedCache } = require('./support');
 
-const connectionString = process.env.DATABASE_URL;
-const redisHost = process.env.REDIS_HOST;
-const skip = connectionString && redisHost ? false : 'DATABASE_URL and REDIS_HOST are required';
+assertIntegrationEnvironment();
 
-describe('data layer integration', { skip }, () => {
+describe('data layer integration', () => {
   let database;
   let data;
+  let namespacedCache;
   const seed = {};
 
   before(async () => {
     const config = loadConfig(process.env);
     database = createDatabase(config, () => {});
-    data = createData({ pool: database.pool, cache: database.cache, log() {} });
     await database.connect();
     await database.connectCache();
+    await assertTestDatabase(database.pool);
+    namespacedCache = createNamespacedCache(database.cache);
+    data = createData({ pool: database.pool, cache: namespacedCache.cache, log() {} });
     await seedDatabase(database.pool, seed);
   });
 
   beforeEach(async () => {
-    await database.cache.flushAll();
+    await namespacedCache.clear();
   });
 
   after(async () => {
+    if (namespacedCache) {
+      await namespacedCache.clear();
+    }
     if (database) {
       await database.shutdown();
     }

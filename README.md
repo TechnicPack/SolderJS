@@ -86,12 +86,12 @@ Visibility follows TechnicSolder's read API behavior:
 ```sh
 pnpm check              # Biome lint/format checks and unit tests
 pnpm test               # Unit and route tests
-pnpm test:services:up   # Start PostgreSQL and Redis test services
-pnpm test:integration   # Exercise the data layer against real services
-pnpm test:services:down # Stop and remove test services
+pnpm test:services:up       # Start isolated PostgreSQL and Redis test services
+pnpm test:integration:local # Exercise the data layer against those services
+pnpm test:services:down     # Stop and remove test services
 ```
 
-CI runs checks on Node.js 22, 24, and 26. The PostgreSQL and Redis integration suite runs on Node.js 24 and 26.
+CI runs checks on Node.js 22, 24, and 26. The PostgreSQL and Redis integration suite runs on Node.js 24 and 26. Integration tests truncate their PostgreSQL fixture tables and require both an explicit destructive-test opt-in and a marker found only in the test schema. The local command above supplies the opt-in and connects only to the ports exposed by `compose.test.yml`.
 
 Redis is treated as an optional acceleration layer: the service starts and remains ready when Redis is unavailable, serves requests from PostgreSQL, and reconnects to Redis in the background. Readiness probes are coalesced for one second to avoid amplifying PostgreSQL load. Restrict `/health/ready` to the orchestrator or monitoring network at the reverse proxy.
 

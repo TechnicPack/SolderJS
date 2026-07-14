@@ -102,6 +102,7 @@ jobs:
 
       - name: Run integration tests
         env:
+          SOLDERJS_ALLOW_DESTRUCTIVE_TESTS: '1'
           DATABASE_URL: postgres://solder:solder@localhost:${{ matrix.postgresPort }}/solder
           REDIS_HOST: localhost
           REDIS_PORT: ${{ matrix.redisPort }}
