@@ -34,6 +34,7 @@ describe('data layer integration', { skip }, () => {
 
   it('reads key and client authorization data', async () => {
     assert.equal((await data.getKey(seed.apiKey)).name, 'Integration Key');
+    assert.equal((await data.verifyKey(seed.apiKey)).name, 'Integration Key');
     assert.deepEqual(await data.getClientAccess(seed.clientId), [seed.privateModpackId]);
     assert.equal(await data.getClientAccess('unknown-client'), null);
   });

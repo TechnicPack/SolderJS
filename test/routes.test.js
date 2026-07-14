@@ -10,6 +10,7 @@ const allBuilds = Object.values(fixtures.builds);
 function createData(overrides = {}) {
   return {
     getKey: async (key) => (key === 'valid-key' ? { name: 'Test Key', created_at: '2026-01-01' } : null),
+    verifyKey: async (key) => (key === 'valid-key' ? { name: 'Test Key', created_at: '2026-01-01' } : null),
     getClientAccess: async (clientId) => {
       if (clientId === 'private-client') return [3];
       if (clientId === 'public-client') return [1];
@@ -126,8 +127,21 @@ describe('modpack routes', () => {
     await request(createTestApp()).get('/api/modpack/private-pack?cid=private-client').expect(200);
   });
 
-  it('rejects invalid and unknown modpack slugs', async () => {
-    await request(createTestApp()).get('/api/modpack/not%20a%20slug').expect(404);
+  it('supports legacy modpack slugs outside the current TechnicSolder allowlist', async () => {
+    const legacy = { ...fixtures.modpacks.public, id: 99, slug: 'legacy.pack+plus' };
+    const data = createData({
+      getModpack: async (slug) => (slug === legacy.slug ? legacy : null),
+    });
+
+    const response = await request(createTestApp({ data })).get('/api/modpack/legacy.pack+plus').expect(200);
+
+    assert.equal(response.body.name, legacy.slug);
+  });
+
+  it('rejects malformed and unknown modpack slugs', async () => {
+    await request(createTestApp())
+      .get(`/api/modpack/${'a'.repeat(256)}`)
+      .expect(404);
     await request(createTestApp()).get('/api/modpack/missing').expect(404);
   });
 });

@@ -119,7 +119,7 @@ function createRouter({ data, config, version, verifyLimiter }) {
       return;
     }
 
-    const keyInfo = await data.getKey(req.params.key);
+    const keyInfo = await data.verifyKey(req.params.key);
     if (!keyInfo) {
       res.status(404).json({ error: 'Key does not exist' });
       return;
@@ -132,7 +132,7 @@ function createRouter({ data, config, version, verifyLimiter }) {
 }
 
 function validSlug(value) {
-  return validSegment(value) && /^[A-Za-z0-9_-]+$/.test(value);
+  return validSegment(value);
 }
 
 function validSegment(value) {

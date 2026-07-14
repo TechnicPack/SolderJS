@@ -52,26 +52,28 @@ function createData({ pool, cache, log }) {
     }
   }
 
+  async function queryKey(key) {
+    const result = await pool.query('SELECT name, created_at FROM keys WHERE api_key=$1 LIMIT 1', [key]);
+    return result.rows[0] || null;
+  }
+
   async function getKey(key) {
-    const cacheKey = `api:key:${digest(key)}`;
-    return cachedQuery(cacheKey, AUTH_TTL_SECONDS, async () => {
-      const result = await pool.query('SELECT name, created_at FROM keys WHERE api_key=$1 LIMIT 1', [key]);
-      return result.rows[0] || null;
-    });
+    return cachedQuery(`api:key:${digest(key)}`, AUTH_TTL_SECONDS, () => queryKey(key));
+  }
+
+  async function verifyKey(key) {
+    return queryKey(key);
   }
 
   async function getClientAccess(clientId) {
-    const cacheKey = `api:client:access:${digest(clientId)}`;
-    return cachedQuery(cacheKey, AUTH_TTL_SECONDS, async () => {
-      const result = await pool.query(
-        'SELECT clients.id, client_modpack.modpack_id FROM clients LEFT JOIN client_modpack ON clients.id = client_modpack.client_id WHERE clients.uuid=$1',
-        [clientId],
-      );
-      if (result.rows.length === 0) {
-        return null;
-      }
-      return result.rows.map((row) => row.modpack_id).filter((id) => id !== null);
-    });
+    const result = await pool.query(
+      'SELECT clients.id, client_modpack.modpack_id FROM clients LEFT JOIN client_modpack ON clients.id = client_modpack.client_id WHERE clients.uuid=$1',
+      [clientId],
+    );
+    if (result.rows.length === 0) {
+      return null;
+    }
+    return result.rows.map((row) => row.modpack_id).filter((id) => id !== null);
   }
 
   async function getModpacks() {
@@ -123,7 +125,7 @@ function createData({ pool, cache, log }) {
     });
   }
 
-  return { getKey, getClientAccess, getModpacks, getModpack, getBuilds, getBuild, getMods };
+  return { getKey, verifyKey, getClientAccess, getModpacks, getModpack, getBuilds, getBuild, getMods };
 }
 
 function digest(value) {

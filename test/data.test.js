@@ -72,6 +72,16 @@ describe('authentication data', () => {
     assert.equal(context.queryCalls.length, 1);
   });
 
+  it('bypasses the authentication cache when explicitly verifying a key', async () => {
+    const context = harness([]);
+
+    assert.equal(await context.data.getKey('new-key'), null);
+    context.setRows([{ name: 'New Key', created_at: '2026-01-01' }]);
+
+    assert.deepEqual(await context.data.verifyKey('new-key'), { name: 'New Key', created_at: '2026-01-01' });
+    assert.equal(context.queryCalls.length, 2);
+  });
+
   it('distinguishes unknown clients from valid clients with no modpack assignments', async () => {
     const context = harness([]);
 
@@ -82,14 +92,18 @@ describe('authentication data', () => {
     assert.match(context.queryCalls[1].sql, /LEFT JOIN client_modpack/);
   });
 
-  it('returns all assigned modpack IDs for a client', async () => {
+  it('returns all assigned modpack IDs for a client without caching authorization', async () => {
     const context = harness([
       { id: 5, modpack_id: 3 },
       { id: 5, modpack_id: 7 },
     ]);
 
     assert.deepEqual(await context.data.getClientAccess('client-id'), [3, 7]);
-    assert.deepEqual(context.setCalls[0].options, { EX: 60 });
+
+    context.setRows([{ id: 5, modpack_id: null }]);
+    assert.deepEqual(await context.data.getClientAccess('client-id'), []);
+    assert.equal(context.queryCalls.length, 2);
+    assert.equal(context.setCalls.length, 0);
   });
 });
 
