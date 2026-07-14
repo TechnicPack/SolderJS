@@ -83,7 +83,7 @@ Visibility follows TechnicSolder's read API behavior:
 ## Development
 
 ```sh
-pnpm check              # ESLint, Prettier, and unit tests
+pnpm check              # Biome lint/format checks and unit tests
 pnpm test               # Unit and route tests
 pnpm test:services:up   # Start PostgreSQL and Redis test services
 pnpm test:integration   # Exercise the data layer against real services
