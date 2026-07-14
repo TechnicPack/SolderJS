@@ -192,6 +192,20 @@ describe('verification and error handling', () => {
     });
   });
 
+  it('treats malformed percent-encoded paths as client errors', async () => {
+    const logs = [];
+    const app = createTestApp({ logs });
+
+    for (const path of ['/api/modpack/%ZZ', '/api/modpack/public-pack/%E0%A4%A', '/api/verify/%ZZ']) {
+      await request(app).get(path).expect(400, { error: 'Malformed request path' });
+    }
+
+    assert.equal(
+      logs.some(([level]) => level === 'error'),
+      false,
+    );
+  });
+
   it('returns 503 when credential validation storage is unavailable', async () => {
     const data = createData({
       getKey: async () => {

@@ -46,6 +46,11 @@ function createApp({ config, data, log, healthCheck, version }) {
   });
 
   app.use((err, _req, res, next) => {
+    if (err instanceof URIError && err.status === 400) {
+      res.status(400).json({ error: 'Malformed request path' });
+      return;
+    }
+
     log('error', 'Server', 'Uncaught request error', err);
     if (res.headersSent) {
       next(err);
