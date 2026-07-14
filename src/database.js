@@ -2,25 +2,16 @@ const pg = require('pg');
 const redis = require('redis');
 
 function createDatabase(config, log) {
-  let hasConnected = false;
+  let cacheConnection;
   const cache = redis.createClient({
     socket: {
       host: config.redis.host,
       port: config.redis.port,
       connectTimeout: config.redis.connectTimeoutMillis,
-      reconnectStrategy(retries) {
-        if (!hasConnected && retries >= config.redis.startupRetries) {
-          return new Error(`Redis unavailable after ${retries + 1} connection attempts`);
-        }
-        return Math.min(50 * 2 ** retries, 3000);
-      },
+      reconnectStrategy: (retries) => Math.min(50 * 2 ** retries, 3000),
     },
     password: config.redis.password,
     disableOfflineQueue: true,
-  });
-
-  cache.on('ready', () => {
-    hasConnected = true;
   });
 
   cache.on('error', (err) => {
@@ -38,12 +29,22 @@ function createDatabase(config, log) {
     log('error', 'Database', 'Idle PostgreSQL client error', err);
   });
 
+  function connectCache() {
+    if (!cacheConnection) {
+      cacheConnection = cache.connect().catch((err) => {
+        log('error', 'Redis', 'Redis connection stopped', err);
+      });
+    }
+    return cacheConnection;
+  }
+
   async function connect() {
-    await Promise.all([cache.connect(), pool.query('SELECT 1')]);
+    void connectCache();
+    await pool.query('SELECT 1');
   }
 
   async function healthCheck() {
-    await Promise.all([cache.ping(), pool.query('SELECT 1')]);
+    await pool.query('SELECT 1');
   }
 
   async function shutdown() {
@@ -59,7 +60,7 @@ function createDatabase(config, log) {
     }
   }
 
-  return { pool, cache, connect, healthCheck, shutdown };
+  return { pool, cache, connect, connectCache, healthCheck, shutdown };
 }
 
 module.exports = { createDatabase };

@@ -42,7 +42,6 @@ A `.env` file is optional. In production, variables can be provided directly by 
 | `REDIS_PORT`               | `6379`               | Redis port                                                         |
 | `REDIS_PASSWORD`           | unset                | Redis password                                                     |
 | `REDIS_CONNECT_TIMEOUT_MS` | `5000`               | Timeout for each Redis connection attempt                          |
-| `REDIS_STARTUP_RETRIES`    | `5`                  | Redis retries before startup fails                                 |
 | `RATE_LIMIT_WINDOW_MS`     | `900000`             | Per-instance API rate-limit window                                 |
 | `RATE_LIMIT_MAX`           | `300`                | Requests allowed per client in each window                         |
 | `VERIFY_RATE_LIMIT_MAX`    | `30`                 | Key-verification requests allowed per client in each window        |
@@ -78,7 +77,7 @@ Visibility follows TechnicSolder's read API behavior:
 | `GET /api/modpack/:slug/:build` | Build metadata and mods; supports `?include=mods`     |
 | `GET /api/verify/:key`          | Verify an API key; subject to the stricter rate limit |
 | `GET /health/live`              | Process liveness                                      |
-| `GET /health/ready`             | PostgreSQL and Redis readiness                        |
+| `GET /health/ready`             | PostgreSQL readiness                                  |
 
 ## Development
 
@@ -91,6 +90,8 @@ pnpm test:services:down # Stop and remove test services
 ```
 
 CI runs checks on Node.js 22, 24, and 26. The PostgreSQL and Redis integration suite runs on Node.js 24 and 26.
+
+Redis is treated as an optional acceleration layer: the service starts and remains ready when Redis is unavailable, serves requests from PostgreSQL, and reconnects to Redis in the background. Readiness probes are coalesced for one second to avoid amplifying PostgreSQL load.
 
 The server handles `SIGINT` and `SIGTERM`, stops accepting new requests, allows active requests a bounded shutdown period, and then closes Redis and PostgreSQL connections.
 

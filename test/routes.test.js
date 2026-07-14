@@ -53,6 +53,19 @@ describe('service endpoints', () => {
     await request(app).get('/health/ready').expect(200, { status: 'ok' });
   });
 
+  it('coalesces readiness probes to avoid amplifying backend load', async () => {
+    let checks = 0;
+    const app = createTestApp({
+      healthCheck: async () => {
+        checks += 1;
+      },
+    });
+
+    await Promise.all(Array.from({ length: 5 }, () => request(app).get('/health/ready').expect(200)));
+
+    assert.equal(checks, 1);
+  });
+
   it('reports failed readiness checks without exposing details', async () => {
     const app = createTestApp({
       healthCheck: async () => {

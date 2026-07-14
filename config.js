@@ -77,7 +77,6 @@ function loadConfig(env = process.env) {
         min: 100,
         max: 60000,
       }),
-      startupRetries: parseInteger('REDIS_STARTUP_RETRIES', env.REDIS_STARTUP_RETRIES, 5, { min: 0, max: 100 }),
     },
     url: {
       mirror: parseMirrorUrl(env.MIRROR_URL),

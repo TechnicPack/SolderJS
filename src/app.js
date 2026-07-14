@@ -13,9 +13,10 @@ function createApp({ config, data, log, healthCheck, version }) {
     res.status(200).json({ status: 'ok' });
   });
 
+  const checkReadiness = cacheCheck(healthCheck, 1000);
   app.get('/health/ready', async (_req, res) => {
     try {
-      await healthCheck();
+      await checkReadiness();
       res.status(200).json({ status: 'ok' });
     } catch (err) {
       log('warn', 'Health', 'Readiness check failed', err);
@@ -50,6 +51,30 @@ function createApp({ config, data, log, healthCheck, version }) {
   });
 
   return app;
+}
+
+function cacheCheck(check, ttlMillis) {
+  let current;
+  let settled = false;
+  let settledAt = 0;
+
+  return function checkOnce() {
+    if (!current || (settled && Date.now() - settledAt >= ttlMillis)) {
+      settled = false;
+      current = Promise.resolve().then(check);
+      current.then(
+        () => {
+          settled = true;
+          settledAt = Date.now();
+        },
+        () => {
+          settled = true;
+          settledAt = Date.now();
+        },
+      );
+    }
+    return current;
+  };
 }
 
 module.exports = { createApp };

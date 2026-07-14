@@ -18,6 +18,7 @@ describe('data layer integration', { skip }, () => {
     database = createDatabase(config, () => {});
     data = createData({ pool: database.pool, cache: database.cache, log() {} });
     await database.connect();
+    await database.connectCache();
     await seedDatabase(database.pool, seed);
   });
 
