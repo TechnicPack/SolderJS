@@ -12,7 +12,7 @@ describe('loadConfig', () => {
     assert.deepEqual(config.web, { host: 'localhost', port: 3000, trustProxy: false });
     assert.equal(config.redis.port, 6379);
     assert.equal(config.pg.max, 20);
-    assert.deepEqual(config.rateLimit, { windowMs: 900000, apiMax: 300, verifyMax: 30 });
+    assert.deepEqual(config.rateLimit, { windowMs: 60000, apiMax: 60, verifyMax: 10 });
     assert.equal(config.url.mirror, 'https://localhost/');
   });
 

@@ -112,12 +112,12 @@ function loadConfig(env = process.env) {
       max: parseInteger('PG_POOL_MAX', env.PG_POOL_MAX, 20, { min: 1, max: 100 }),
     },
     rateLimit: {
-      windowMs: parseInteger('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, {
+      windowMs: parseInteger('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 60 * 1000, {
         min: 1000,
         max: 24 * 60 * 60 * 1000,
       }),
-      apiMax: parseInteger('RATE_LIMIT_MAX', env.RATE_LIMIT_MAX, 300, { min: 1, max: 100000 }),
-      verifyMax: parseInteger('VERIFY_RATE_LIMIT_MAX', env.VERIFY_RATE_LIMIT_MAX, 30, { min: 1, max: 100000 }),
+      apiMax: parseInteger('RATE_LIMIT_MAX', env.RATE_LIMIT_MAX, 60, { min: 1, max: 100000 }),
+      verifyMax: parseInteger('VERIFY_RATE_LIMIT_MAX', env.VERIFY_RATE_LIMIT_MAX, 10, { min: 1, max: 100000 }),
     },
   };
 }

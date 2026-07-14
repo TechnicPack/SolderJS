@@ -42,15 +42,15 @@ A `.env` file is optional. In production, variables can be provided directly by 
 | `REDIS_PORT`               | `6379`               | Redis port                                                         |
 | `REDIS_PASSWORD`           | unset                | Redis password                                                     |
 | `REDIS_CONNECT_TIMEOUT_MS` | `5000`               | Timeout for each Redis connection attempt                          |
-| `RATE_LIMIT_WINDOW_MS`     | `900000`             | Per-instance API rate-limit window                                 |
-| `RATE_LIMIT_MAX`           | `300`                | Requests allowed per client in each window                         |
-| `VERIFY_RATE_LIMIT_MAX`    | `30`                 | Key-verification requests allowed per client in each window        |
+| `RATE_LIMIT_WINDOW_MS`     | `60000`              | Per-instance API rate-limit window                                 |
+| `RATE_LIMIT_MAX`           | `60`                 | Requests allowed per client in each window                         |
+| `VERIFY_RATE_LIMIT_MAX`    | `10`                 | Key-verification requests allowed per client in each window        |
 
 Keep `TRUST_PROXY=false` unless the service is behind a known reverse proxy. For a single proxy hop, use `TRUST_PROXY=1`; trusting an incorrect number of hops can allow clients to spoof their address. Boolean `true` is rejected because trusting every proxy allows clients to bypass IP-based rate limits.
 
 > **Upgrade note:** Previous releases enabled Express proxy trust unconditionally. Before deploying this version behind a reverse proxy, set `TRUST_PROXY` to the exact proxy hop count. If it remains `false`, all clients behind that proxy share one rate-limit bucket.
 
-Rate limits use in-process storage and therefore apply per SolderJS instance. Use a shared rate-limit store at the edge when enforcing a cluster-wide limit.
+The default limits match TechnicSolder's 60 API requests and 10 key-verification requests per minute for a single unauthenticated client address. Rate limits use in-process storage and therefore apply per SolderJS instance. Use a shared rate-limit store at the edge when enforcing a cluster-wide limit.
 
 ## Authentication
 
