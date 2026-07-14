@@ -1,0 +1,121 @@
+const modpacks = {
+  public: {
+    id: 1,
+    slug: 'public-pack',
+    name: 'Public Pack',
+    hidden: false,
+    private: false,
+    recommended: '1.0.0',
+    latest: '2.0.0',
+  },
+  hidden: {
+    id: 2,
+    slug: 'hidden-pack',
+    name: 'Hidden Pack',
+    hidden: true,
+    private: false,
+    recommended: '1.0.0',
+    latest: '1.0.0',
+  },
+  private: {
+    id: 3,
+    slug: 'private-pack',
+    name: 'Private Pack',
+    hidden: false,
+    private: true,
+    recommended: '1.0.0',
+    latest: '1.0.0',
+  },
+};
+
+const builds = {
+  public: {
+    id: 1,
+    modpack_id: 1,
+    version: '1.0.0',
+    is_published: true,
+    private: false,
+    minecraft: '1.20',
+    forge: null,
+    min_java: '17',
+    min_memory: 2048,
+  },
+  publicAlt: {
+    id: 2,
+    modpack_id: 1,
+    version: '2.0.0',
+    is_published: true,
+    private: false,
+    minecraft: '1.21',
+    forge: null,
+    min_java: '21',
+    min_memory: 4096,
+  },
+  unpublished: {
+    id: 3,
+    modpack_id: 1,
+    version: '3.0.0',
+    is_published: false,
+    private: false,
+    minecraft: '1.21',
+    forge: null,
+    min_java: '21',
+    min_memory: 4096,
+  },
+  privateBuild: {
+    id: 4,
+    modpack_id: 1,
+    version: 'private-1.0.0',
+    is_published: true,
+    private: true,
+    minecraft: '1.20',
+    forge: null,
+    min_java: '17',
+    min_memory: 2048,
+  },
+  privatePackBuild: {
+    id: 5,
+    modpack_id: 3,
+    version: '1.0.0',
+    is_published: true,
+    private: false,
+    minecraft: '1.20',
+    forge: null,
+    min_java: '17',
+    min_memory: 2048,
+  },
+};
+
+const mods = [
+  {
+    id: 1,
+    name: 'test-mod',
+    pretty_name: 'Test Mod',
+    author: 'Author',
+    description: 'A test mod',
+    link: 'https://example.com',
+    version: '1.0',
+    md5: 'abc123',
+    filesize: 1024,
+  },
+  {
+    id: 2,
+    name: 'another-mod',
+    pretty_name: 'Another Mod',
+    author: 'Author 2',
+    description: 'Another test mod',
+    link: 'https://example.org',
+    version: '2.0',
+    md5: 'def456',
+    filesize: null,
+  },
+];
+
+const auth = {
+  anonymous: { key: { authed: false }, client: { authed: false, modpacks: [] } },
+  key: { key: { authed: true }, client: { authed: false, modpacks: [] } },
+  privateClient: { key: { authed: false }, client: { authed: true, modpacks: [3] } },
+  publicClient: { key: { authed: false }, client: { authed: true, modpacks: [1] } },
+};
+
+module.exports = { modpacks, builds, mods, auth };

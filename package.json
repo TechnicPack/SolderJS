@@ -7,7 +7,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test",
+    "test": "node --test test/*.test.js",
+    "test:integration": "node --test test/integration/*.test.js",
+    "test:services:up": "docker compose -f compose.test.yml up -d --wait",
+    "test:services:down": "docker compose -f compose.test.yml down -v",
     "check": "pnpm lint && pnpm format:check && pnpm test"
   },
   "dependencies": {
@@ -21,7 +24,8 @@
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
     "globals": "17.0.0",
-    "prettier": "3.7.4"
+    "prettier": "3.7.4",
+    "supertest": "^7.2.2"
   },
   "engines": {
     "node": ">=22.13",
