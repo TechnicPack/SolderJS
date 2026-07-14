@@ -31,10 +31,10 @@ A `.env` file is optional. In production, variables can be provided directly by 
 | `DATABASE_URL`             | required             | PostgreSQL URL for the existing TechnicSolder database             |
 | `HOST`                     | `localhost`          | HTTP listen address                                                |
 | `PORT`                     | `3000`               | HTTP listen port                                                   |
-| `TRUST_PROXY`              | `false`              | Exact proxy hop count or an Express-compatible trusted proxy value |
+| `TRUST_PROXY`              | `false`              | Proxy hop count/trusted value; `true` is rejected                  |
 | `MIRROR_URL`               | `https://localhost/` | Base URL used to construct mod download URLs                       |
 | `NODE_LOGGING`             | `true`               | Enable application logging                                         |
-| `LOGGING_LEVEL`            | `info`               | Winston log level                                                  |
+| `LOGGING_LEVEL`            | `info`               | Winston npm level (`error` through `silly`)                        |
 | `PG_CONNECTION_TIMEOUT_MS` | `5000`               | PostgreSQL connection timeout                                      |
 | `PG_QUERY_TIMEOUT_MS`      | `10000`              | PostgreSQL query timeout                                           |
 | `PG_POOL_MAX`              | `20`                 | Maximum PostgreSQL pool size                                       |
@@ -46,7 +46,9 @@ A `.env` file is optional. In production, variables can be provided directly by 
 | `RATE_LIMIT_MAX`           | `300`                | Requests allowed per client in each window                         |
 | `VERIFY_RATE_LIMIT_MAX`    | `30`                 | Key-verification requests allowed per client in each window        |
 
-Keep `TRUST_PROXY=false` unless the service is behind a known reverse proxy. For a single proxy hop, use `TRUST_PROXY=1`; trusting an incorrect number of hops can allow clients to spoof their address.
+Keep `TRUST_PROXY=false` unless the service is behind a known reverse proxy. For a single proxy hop, use `TRUST_PROXY=1`; trusting an incorrect number of hops can allow clients to spoof their address. Boolean `true` is rejected because trusting every proxy allows clients to bypass IP-based rate limits.
+
+> **Upgrade note:** Previous releases enabled Express proxy trust unconditionally. Before deploying this version behind a reverse proxy, set `TRUST_PROXY` to the exact proxy hop count. If it remains `false`, all clients behind that proxy share one rate-limit bucket.
 
 Rate limits use in-process storage and therefore apply per SolderJS instance. Use a shared rate-limit store at the edge when enforcing a cluster-wide limit.
 
@@ -91,7 +93,7 @@ pnpm test:services:down # Stop and remove test services
 
 CI runs checks on Node.js 22, 24, and 26. The PostgreSQL and Redis integration suite runs on Node.js 24 and 26.
 
-Redis is treated as an optional acceleration layer: the service starts and remains ready when Redis is unavailable, serves requests from PostgreSQL, and reconnects to Redis in the background. Readiness probes are coalesced for one second to avoid amplifying PostgreSQL load.
+Redis is treated as an optional acceleration layer: the service starts and remains ready when Redis is unavailable, serves requests from PostgreSQL, and reconnects to Redis in the background. Readiness probes are coalesced for one second to avoid amplifying PostgreSQL load. Restrict `/health/ready` to the orchestrator or monitoring network at the reverse proxy.
 
 The server handles `SIGINT` and `SIGTERM`, stops accepting new requests, allows active requests a bounded shutdown period, and then closes Redis and PostgreSQL connections.
 

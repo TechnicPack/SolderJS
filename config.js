@@ -1,3 +1,5 @@
+const LOGGING_LEVELS = new Set(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']);
+
 const BOOLEAN_VALUES = new Map([
   ['1', true],
   ['true', true],
@@ -41,9 +43,25 @@ function parseMirrorUrl(value) {
   return mirror.href.endsWith('/') ? mirror.href : `${mirror.href}/`;
 }
 
+function parseLoggingLevel(value) {
+  const level = (value || 'info').toLowerCase();
+  if (!LOGGING_LEVELS.has(level)) {
+    throw new Error(`LOGGING_LEVEL must be one of: ${Array.from(LOGGING_LEVELS).join(', ')}`);
+  }
+  return level;
+}
+
 function parseTrustProxy(value) {
-  if (value === undefined || value === '' || value === 'false' || value === '0') {
+  if (value === undefined || value === '') {
     return false;
+  }
+
+  const normalized = value.toLowerCase();
+  if (['false', 'no', 'off', '0'].includes(normalized)) {
+    return false;
+  }
+  if (['true', 'yes', 'on'].includes(normalized)) {
+    throw new Error('TRUST_PROXY=true is unsafe with IP-based rate limiting; use an exact proxy hop count');
   }
 
   const hops = Number(value);
@@ -62,7 +80,7 @@ function loadConfig(env = process.env) {
   return {
     logging: {
       enabled: parseBoolean('NODE_LOGGING', env.NODE_LOGGING, true),
-      level: env.LOGGING_LEVEL || 'info',
+      level: parseLoggingLevel(env.LOGGING_LEVEL),
     },
     web: {
       host: env.HOST || 'localhost',

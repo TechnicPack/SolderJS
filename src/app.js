@@ -6,7 +6,11 @@ const { createRouter } = require('./routes');
 function createApp({ config, data, log, healthCheck, version }) {
   const app = express();
 
-  app.set('trust proxy', config.web.trustProxy);
+  try {
+    app.set('trust proxy', config.web.trustProxy);
+  } catch (err) {
+    throw new Error(`Invalid TRUST_PROXY setting: ${err.message}`, { cause: err });
+  }
   app.disable('x-powered-by');
 
   app.get('/health/live', (_req, res) => {

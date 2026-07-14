@@ -16,10 +16,15 @@ describe('loadConfig', () => {
     assert.equal(config.url.mirror, 'https://localhost/');
   });
 
-  it('parses explicit false booleans and a trusted proxy hop count', () => {
-    const config = loadConfig({ ...requiredEnv, NODE_LOGGING: 'false', TRUST_PROXY: '1' });
+  it('parses explicit false booleans, logging levels, and a trusted proxy hop count', () => {
+    const config = loadConfig({
+      ...requiredEnv,
+      NODE_LOGGING: 'false',
+      LOGGING_LEVEL: 'DEBUG',
+      TRUST_PROXY: '1',
+    });
 
-    assert.equal(config.logging.enabled, false);
+    assert.deepEqual(config.logging, { enabled: false, level: 'debug' });
     assert.equal(config.web.trustProxy, 1);
   });
 
@@ -36,6 +41,8 @@ describe('loadConfig', () => {
   it('rejects malformed ports, booleans, and operational limits', () => {
     assert.throws(() => loadConfig({ ...requiredEnv, PORT: '3000oops' }), /PORT must be an integer/);
     assert.throws(() => loadConfig({ ...requiredEnv, NODE_LOGGING: 'sometimes' }), /NODE_LOGGING must be one of/);
+    assert.throws(() => loadConfig({ ...requiredEnv, LOGGING_LEVEL: 'warning' }), /LOGGING_LEVEL must be one of/);
+    assert.throws(() => loadConfig({ ...requiredEnv, TRUST_PROXY: 'true' }), /TRUST_PROXY=true is unsafe/);
     assert.throws(() => loadConfig({ ...requiredEnv, RATE_LIMIT_MAX: '0' }), /RATE_LIMIT_MAX must be an integer/);
   });
 
