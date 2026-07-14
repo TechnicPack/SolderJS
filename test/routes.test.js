@@ -204,6 +204,30 @@ describe('verification and error handling', () => {
     });
   });
 
+  it('only performs credential lookups for API requests after rate limiting', async () => {
+    let keyLookups = 0;
+    let clientLookups = 0;
+    const data = createData({
+      getKey: async () => {
+        keyLookups += 1;
+        return null;
+      },
+      getClientAccess: async () => {
+        clientLookups += 1;
+        return null;
+      },
+    });
+    const app = createTestApp({ data, rateLimits: { apiMax: 1, verifyMax: 1000 } });
+
+    await request(app).get('/anything?k=random&cid=random').expect(404);
+    assert.equal(keyLookups, 0);
+    assert.equal(clientLookups, 0);
+
+    await request(app).get('/api?k=first').expect(200);
+    await request(app).get('/api?k=second').expect(429);
+    assert.equal(keyLookups, 1);
+  });
+
   it('rate limits API traffic without limiting health probes', async () => {
     const app = createTestApp({ rateLimits: { apiMax: 2, verifyMax: 1000 } });
 

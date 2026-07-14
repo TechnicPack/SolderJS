@@ -38,7 +38,7 @@ function createApp({ config, data, log, healthCheck, version }) {
   const verifyLimiter = rateLimit({ ...limiterOptions, limit: config.rateLimit.verifyMax });
 
   app.use('/api', apiLimiter);
-  app.use(createAuthMiddleware({ data, log }));
+  app.use('/api', createAuthMiddleware({ data, log }));
   app.use(createRouter({ data, config, version, verifyLimiter }));
 
   app.use((_req, res) => {
