@@ -1,23 +1,29 @@
 const { loadEnvFile } = require('node:process');
-loadEnvFile();
 
-const config = require('./config');
+try {
+  loadEnvFile();
+} catch (err) {
+  if (err.code !== 'ENOENT') {
+    throw err;
+  }
+}
+
+const { loadConfig } = require('./config');
+const config = loadConfig();
 const express = require('express');
 const pg = require('pg');
 const redis = require('redis');
 const async = require('async');
 const winston = require('winston');
 
-const rclient = redis.createClient(config.redis.port, config.redis.host, {
-  no_ready_check: config.redis.no_ready_check,
-});
+const rclient = redis.createClient(config.redis.port, config.redis.host);
 
 if (config.redis.password) {
   rclient.auth(config.redis.password);
 }
 
 const logger = winston.createLogger({
-  level: config.logging_level,
+  level: config.logging.level,
   format: winston.format.combine(
     winston.format.colorize(),
     winston.format.timestamp(),
@@ -29,14 +35,15 @@ const logger = winston.createLogger({
 });
 
 const pool = new pg.Pool({
-  connectionString: config.pg.options,
-  connectionTimeoutMillis: 1000,
-  max: 50,
+  connectionString: config.pg.connectionString,
+  connectionTimeoutMillis: config.pg.connectionTimeoutMillis,
+  query_timeout: config.pg.queryTimeoutMillis,
+  max: config.pg.max,
 });
 
 const app = express();
 
-app.enable('trust proxy');
+app.set('trust proxy', config.web.trustProxy);
 app.disable('x-powered-by');
 
 // Set key and client if available
@@ -657,7 +664,7 @@ function getKey(key, callback) {
 }
 
 function log(level, system, msg, meta) {
-  if (config.logging) {
+  if (config.logging.enabled) {
     if (meta) {
       logger.log(level, '[API][' + system + '] ' + msg, meta);
     } else {

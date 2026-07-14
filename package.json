@@ -7,7 +7,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm lint && pnpm format:check"
+    "test": "node --test",
+    "check": "pnpm lint && pnpm format:check && pnpm test"
   },
   "dependencies": {
     "async": "^3.2.6",
