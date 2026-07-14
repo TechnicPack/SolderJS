@@ -2,6 +2,13 @@
   "name": "solderjs",
   "version": "3.0.7",
   "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm lint && pnpm format:check"
+  },
   "dependencies": {
     "async": "^3.2.6",
     "express": "^5.2.1",
@@ -17,6 +24,7 @@
     "prettier": "3.7.4"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13",
+    "pnpm": "11"
   }
 }
