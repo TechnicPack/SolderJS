@@ -6,7 +6,7 @@ SolderJS is an alternative read-only API for [TechnicSolder](https://github.com/
 
 ## Requirements
 
-- Node.js 22 or 24
+- Node.js 22 or newer (CI covers 22, 24, and 26)
 - pnpm 11
 - An existing TechnicSolder database on PostgreSQL
 - Redis 7 or newer
@@ -90,7 +90,7 @@ pnpm test:integration   # Exercise the data layer against real services
 pnpm test:services:down # Stop and remove test services
 ```
 
-CI runs checks on Node.js 22 and 24 and runs the integration suite against PostgreSQL and Redis.
+CI runs checks on Node.js 22, 24, and 26. The PostgreSQL and Redis integration suite runs on Node.js 24 and 26.
 
 The server handles `SIGINT` and `SIGTERM`, stops accepting new requests, allows active requests a bounded shutdown period, and then closes Redis and PostgreSQL connections.
 
