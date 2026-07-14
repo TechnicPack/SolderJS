@@ -4,6 +4,8 @@ const AUTH_TTL_SECONDS = 60;
 const CONTENT_TTL_SECONDS = 300;
 
 function createData({ pool, cache, log }) {
+  const inFlight = new Map();
+
   async function readCache(key) {
     try {
       const serialized = await cache.get(key);
@@ -31,9 +33,23 @@ function createData({ pool, cache, log }) {
       return cached.value;
     }
 
-    const value = await query();
-    await writeCache(key, value, ttl);
-    return value;
+    if (inFlight.has(key)) {
+      return inFlight.get(key);
+    }
+
+    const pending = (async () => {
+      const value = await query();
+      const effectiveTtl = value === null ? Math.min(ttl, AUTH_TTL_SECONDS) : ttl;
+      await writeCache(key, value, effectiveTtl);
+      return value;
+    })();
+    inFlight.set(key, pending);
+
+    try {
+      return await pending;
+    } finally {
+      inFlight.delete(key);
+    }
   }
 
   async function getKey(key) {

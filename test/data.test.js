@@ -105,6 +105,15 @@ describe('content data', () => {
     assert.deepEqual(context.setCalls[0].options, { EX: 300 });
   });
 
+  it('coalesces concurrent cache misses', async () => {
+    const context = harness([{ id: 1, slug: 'pack' }]);
+
+    await Promise.all([context.data.getModpacks(), context.data.getModpacks(), context.data.getModpacks()]);
+
+    assert.equal(context.queryCalls.length, 1);
+    assert.equal(context.setCalls.length, 1);
+  });
+
   it('queries a modpack by slug with explicit columns', async () => {
     const row = { id: 1, slug: 'pack' };
     const context = harness([row]);

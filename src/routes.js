@@ -4,7 +4,7 @@ const { hasControlCharacters } = require('./validation');
 
 const INCLUDE_FULL_CONCURRENCY = 10;
 
-function createRouter({ data, config, version }) {
+function createRouter({ data, config, version, verifyLimiter }) {
   const router = express.Router();
 
   async function getModpackResponse(modpack, locals) {
@@ -113,7 +113,7 @@ function createRouter({ data, config, version }) {
     res.status(200).json(await getBuildResponse(build, req.query.include));
   });
 
-  router.get('/api/verify/:key', async (req, res) => {
+  router.get('/api/verify/:key', verifyLimiter, async (req, res) => {
     if (!validSegment(req.params.key)) {
       res.status(404).json({ error: 'Key does not exist' });
       return;

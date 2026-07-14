@@ -73,6 +73,11 @@ function loadConfig(env = process.env) {
       host: env.REDIS_HOST || 'localhost',
       port: parseInteger('REDIS_PORT', env.REDIS_PORT, 6379, { min: 1, max: 65535 }),
       password: env.REDIS_PASSWORD || undefined,
+      connectTimeoutMillis: parseInteger('REDIS_CONNECT_TIMEOUT_MS', env.REDIS_CONNECT_TIMEOUT_MS, 5000, {
+        min: 100,
+        max: 60000,
+      }),
+      startupRetries: parseInteger('REDIS_STARTUP_RETRIES', env.REDIS_STARTUP_RETRIES, 5, { min: 0, max: 100 }),
     },
     url: {
       mirror: parseMirrorUrl(env.MIRROR_URL),
@@ -88,6 +93,14 @@ function loadConfig(env = process.env) {
         max: 300000,
       }),
       max: parseInteger('PG_POOL_MAX', env.PG_POOL_MAX, 20, { min: 1, max: 100 }),
+    },
+    rateLimit: {
+      windowMs: parseInteger('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, {
+        min: 1000,
+        max: 24 * 60 * 60 * 1000,
+      }),
+      apiMax: parseInteger('RATE_LIMIT_MAX', env.RATE_LIMIT_MAX, 300, { min: 1, max: 100000 }),
+      verifyMax: parseInteger('VERIFY_RATE_LIMIT_MAX', env.VERIFY_RATE_LIMIT_MAX, 30, { min: 1, max: 100000 }),
     },
   };
 }

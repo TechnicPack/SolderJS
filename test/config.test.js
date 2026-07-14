@@ -12,6 +12,7 @@ describe('loadConfig', () => {
     assert.deepEqual(config.web, { host: 'localhost', port: 3000, trustProxy: false });
     assert.equal(config.redis.port, 6379);
     assert.equal(config.pg.max, 20);
+    assert.deepEqual(config.rateLimit, { windowMs: 900000, apiMax: 300, verifyMax: 30 });
     assert.equal(config.url.mirror, 'https://localhost/');
   });
 
@@ -32,9 +33,10 @@ describe('loadConfig', () => {
     assert.throws(() => loadConfig({}), /DATABASE_URL is required/);
   });
 
-  it('rejects malformed ports and booleans', () => {
+  it('rejects malformed ports, booleans, and operational limits', () => {
     assert.throws(() => loadConfig({ ...requiredEnv, PORT: '3000oops' }), /PORT must be an integer/);
     assert.throws(() => loadConfig({ ...requiredEnv, NODE_LOGGING: 'sometimes' }), /NODE_LOGGING must be one of/);
+    assert.throws(() => loadConfig({ ...requiredEnv, RATE_LIMIT_MAX: '0' }), /RATE_LIMIT_MAX must be an integer/);
   });
 
   it('rejects non-HTTP mirror URLs', () => {

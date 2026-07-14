@@ -2,14 +2,25 @@ const pg = require('pg');
 const redis = require('redis');
 
 function createDatabase(config, log) {
+  let hasConnected = false;
   const cache = redis.createClient({
     socket: {
       host: config.redis.host,
       port: config.redis.port,
-      connectTimeout: 5000,
+      connectTimeout: config.redis.connectTimeoutMillis,
+      reconnectStrategy(retries) {
+        if (!hasConnected && retries >= config.redis.startupRetries) {
+          return new Error(`Redis unavailable after ${retries + 1} connection attempts`);
+        }
+        return Math.min(50 * 2 ** retries, 3000);
+      },
     },
     password: config.redis.password,
     disableOfflineQueue: true,
+  });
+
+  cache.on('ready', () => {
+    hasConnected = true;
   });
 
   cache.on('error', (err) => {

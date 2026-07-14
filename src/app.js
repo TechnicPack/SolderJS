@@ -1,4 +1,5 @@
 const express = require('express');
+const { rateLimit } = require('express-rate-limit');
 const { createAuthMiddleware } = require('./auth');
 const { createRouter } = require('./routes');
 
@@ -22,8 +23,18 @@ function createApp({ config, data, log, healthCheck, version }) {
     }
   });
 
+  const limiterOptions = {
+    windowMs: config.rateLimit.windowMs,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { error: 'Too many requests' },
+  };
+  const apiLimiter = rateLimit({ ...limiterOptions, limit: config.rateLimit.apiMax });
+  const verifyLimiter = rateLimit({ ...limiterOptions, limit: config.rateLimit.verifyMax });
+
+  app.use('/api', apiLimiter);
   app.use(createAuthMiddleware({ data, log }));
-  app.use(createRouter({ data, config, version }));
+  app.use(createRouter({ data, config, version, verifyLimiter }));
 
   app.use((_req, res) => {
     res.sendStatus(404);

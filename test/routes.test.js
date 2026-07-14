@@ -26,9 +26,18 @@ function createData(overrides = {}) {
   };
 }
 
-function createTestApp({ data = createData(), healthCheck = async () => {}, logs = [] } = {}) {
+function createTestApp({
+  data = createData(),
+  healthCheck = async () => {},
+  logs = [],
+  rateLimits = { apiMax: 1000, verifyMax: 1000 },
+} = {}) {
   return createApp({
-    config: { web: { trustProxy: false }, url: { mirror: 'https://cdn.example.com/' } },
+    config: {
+      web: { trustProxy: false },
+      url: { mirror: 'https://cdn.example.com/' },
+      rateLimit: { windowMs: 60000, ...rateLimits },
+    },
     data,
     healthCheck,
     log: (...args) => logs.push(args),
@@ -166,5 +175,21 @@ describe('verification and error handling', () => {
     await request(createTestApp({ data })).get('/api/modpack?k=key').expect(503, {
       error: 'Service temporarily unavailable',
     });
+  });
+
+  it('rate limits API traffic without limiting health probes', async () => {
+    const app = createTestApp({ rateLimits: { apiMax: 2, verifyMax: 1000 } });
+
+    await request(app).get('/api').expect(200);
+    await request(app).get('/api').expect(200);
+    await request(app).get('/api').expect(429, { error: 'Too many requests' });
+    await request(app).get('/health/live').expect(200);
+  });
+
+  it('applies a stricter limit to key verification', async () => {
+    const app = createTestApp({ rateLimits: { apiMax: 1000, verifyMax: 1 } });
+
+    await request(app).get('/api/verify/valid-key').expect(200);
+    await request(app).get('/api/verify/valid-key').expect(429, { error: 'Too many requests' });
   });
 });
