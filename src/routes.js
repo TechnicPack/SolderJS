@@ -126,7 +126,7 @@ function createRouter({ data, config, version, verifyLimiter }) {
       return;
     }
 
-    res.status(200).json({ valid: true, name: keyInfo.name, created_at: keyInfo.created_at });
+    res.status(200).json({ valid: true, name: keyInfo.name });
   });
 
   return router;

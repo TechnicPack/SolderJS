@@ -53,7 +53,7 @@ function createData({ pool, cache, log }) {
   }
 
   async function queryKey(key) {
-    const result = await pool.query('SELECT name, created_at FROM keys WHERE api_key=$1 LIMIT 1', [key]);
+    const result = await pool.query('SELECT name FROM keys WHERE api_key=$1 LIMIT 1', [key]);
     return result.rows[0] || null;
   }
 

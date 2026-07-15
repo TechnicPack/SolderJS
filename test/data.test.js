@@ -53,12 +53,12 @@ function harness(rows = []) {
 
 describe('authentication data', () => {
   it('looks up and caches key metadata without exposing the key in the cache key', async () => {
-    const keyInfo = { name: 'Test Key', created_at: '2026-01-01' };
+    const keyInfo = { name: 'Test Key' };
     const context = harness([keyInfo]);
 
     assert.deepEqual(await context.data.getKey('very-secret-api-key'), keyInfo);
     assert.equal(context.queryCalls.length, 1);
-    assert.equal(context.queryCalls[0].sql, 'SELECT name, created_at FROM keys WHERE api_key=$1 LIMIT 1');
+    assert.equal(context.queryCalls[0].sql, 'SELECT name FROM keys WHERE api_key=$1 LIMIT 1');
     assert.deepEqual(context.queryCalls[0].params, ['very-secret-api-key']);
     assert.equal(context.setCalls[0].options.EX, 60);
     assert.doesNotMatch(context.setCalls[0].key, /very-secret-api-key/);
@@ -76,9 +76,9 @@ describe('authentication data', () => {
     const context = harness([]);
 
     assert.equal(await context.data.getKey('new-key'), null);
-    context.setRows([{ name: 'New Key', created_at: '2026-01-01' }]);
+    context.setRows([{ name: 'New Key' }]);
 
-    assert.deepEqual(await context.data.verifyKey('new-key'), { name: 'New Key', created_at: '2026-01-01' });
+    assert.deepEqual(await context.data.verifyKey('new-key'), { name: 'New Key' });
     assert.equal(context.queryCalls.length, 2);
   });
 
@@ -177,7 +177,7 @@ describe('content data', () => {
 
 describe('cache resilience', () => {
   it('continues key authentication when Redis is unavailable', async () => {
-    const keyInfo = { name: 'Test Key', created_at: '2026-01-01' };
+    const keyInfo = { name: 'Test Key' };
     const context = harness([keyInfo]);
     context.failReads(new Error('Redis unavailable'));
     context.failWrites(new Error('Redis unavailable'));

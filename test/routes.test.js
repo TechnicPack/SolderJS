@@ -9,8 +9,8 @@ const allBuilds = Object.values(fixtures.builds);
 
 function createData(overrides = {}) {
   return {
-    getKey: async (key) => (key === 'valid-key' ? { name: 'Test Key', created_at: '2026-01-01' } : null),
-    verifyKey: async (key) => (key === 'valid-key' ? { name: 'Test Key', created_at: '2026-01-01' } : null),
+    getKey: async (key) => (key === 'valid-key' ? { name: 'Test Key' } : null),
+    verifyKey: async (key) => (key === 'valid-key' ? { name: 'Test Key' } : null),
     getClientAccess: async (clientId) => {
       if (clientId === 'private-client') return [3];
       if (clientId === 'public-client') return [1];
@@ -198,7 +198,7 @@ describe('verification and error handling', () => {
   it('verifies keys without returning the key itself', async () => {
     const response = await request(createTestApp()).get('/api/verify/valid-key').expect(200);
 
-    assert.deepEqual(response.body, { valid: true, name: 'Test Key', created_at: '2026-01-01' });
+    assert.deepEqual(response.body, { valid: true, name: 'Test Key' });
     await request(createTestApp()).get('/api/verify/invalid-key').expect(404);
   });
 
