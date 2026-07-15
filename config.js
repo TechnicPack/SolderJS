@@ -1,23 +1,125 @@
-const config = {};
+const LOGGING_LEVELS = new Set(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']);
 
-config.redis = {};
-config.web = {};
-config.url = {};
-config.pg = {};
+const BOOLEAN_VALUES = new Map([
+  ['1', true],
+  ['true', true],
+  ['yes', true],
+  ['on', true],
+  ['0', false],
+  ['false', false],
+  ['no', false],
+  ['off', false],
+]);
 
-config.logging = Boolean(parseInt(process.env.NODE_LOGGING)) || true;
-config.logging_level = process.env.LOGGING_LEVEL || 'debug';
+function parseBoolean(name, value, fallback) {
+  if (value === undefined || value === '') {
+    return fallback;
+  }
 
-config.web.host = process.env.HOST || 'localhost';
-config.web.port = parseInt(process.env.PORT) || 3000;
+  const parsed = BOOLEAN_VALUES.get(value.toLowerCase());
+  if (parsed === undefined) {
+    throw new Error(`${name} must be one of: ${Array.from(BOOLEAN_VALUES.keys()).join(', ')}`);
+  }
+  return parsed;
+}
 
-config.redis.host = process.env.REDIS_HOST || 'localhost';
-config.redis.port = parseInt(process.env.REDIS_PORT) || 6379;
-config.redis.password = process.env.REDIS_PASSWORD || null;
-config.redis.no_ready_check = Boolean(parseInt(process.env.REDIS_NO_READY_CHECK)) || false;
+function parseInteger(name, value, fallback, { min, max }) {
+  if (value === undefined || value === '') {
+    return fallback;
+  }
 
-config.url.mirror = process.env.MIRROR_URL || 'https://localhost/';
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    throw new Error(`${name} must be an integer between ${min} and ${max}`);
+  }
+  return parsed;
+}
 
-config.pg.options = process.env.DATABASE_URL || 'localhost';
+function parseMirrorUrl(value) {
+  const mirror = new URL(value || 'https://localhost/');
+  if (!['http:', 'https:'].includes(mirror.protocol)) {
+    throw new Error('MIRROR_URL must use http or https');
+  }
+  return mirror.href.endsWith('/') ? mirror.href : `${mirror.href}/`;
+}
 
-module.exports = config;
+function parseLoggingLevel(value) {
+  const level = (value || 'info').toLowerCase();
+  if (!LOGGING_LEVELS.has(level)) {
+    throw new Error(`LOGGING_LEVEL must be one of: ${Array.from(LOGGING_LEVELS).join(', ')}`);
+  }
+  return level;
+}
+
+function parseTrustProxy(value) {
+  if (value === undefined || value === '') {
+    return false;
+  }
+
+  const normalized = value.toLowerCase();
+  if (['false', 'no', 'off', '0'].includes(normalized)) {
+    return false;
+  }
+  if (['true', 'yes', 'on'].includes(normalized)) {
+    throw new Error('TRUST_PROXY=true is unsafe with IP-based rate limiting; use an exact proxy hop count');
+  }
+
+  const hops = Number(value);
+  if (Number.isInteger(hops) && hops > 0) {
+    return hops;
+  }
+
+  return value;
+}
+
+function loadConfig(env = process.env) {
+  if (!env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is required');
+  }
+
+  return {
+    logging: {
+      enabled: parseBoolean('NODE_LOGGING', env.NODE_LOGGING, true),
+      level: parseLoggingLevel(env.LOGGING_LEVEL),
+    },
+    web: {
+      host: env.HOST || 'localhost',
+      port: parseInteger('PORT', env.PORT, 3000, { min: 1, max: 65535 }),
+      trustProxy: parseTrustProxy(env.TRUST_PROXY),
+    },
+    redis: {
+      host: env.REDIS_HOST || 'localhost',
+      port: parseInteger('REDIS_PORT', env.REDIS_PORT, 6379, { min: 1, max: 65535 }),
+      password: env.REDIS_PASSWORD || undefined,
+      connectTimeoutMillis: parseInteger('REDIS_CONNECT_TIMEOUT_MS', env.REDIS_CONNECT_TIMEOUT_MS, 5000, {
+        min: 100,
+        max: 60000,
+      }),
+    },
+    url: {
+      mirror: parseMirrorUrl(env.MIRROR_URL),
+    },
+    pg: {
+      connectionString: env.DATABASE_URL,
+      connectionTimeoutMillis: parseInteger('PG_CONNECTION_TIMEOUT_MS', env.PG_CONNECTION_TIMEOUT_MS, 5000, {
+        min: 1,
+        max: 60000,
+      }),
+      queryTimeoutMillis: parseInteger('PG_QUERY_TIMEOUT_MS', env.PG_QUERY_TIMEOUT_MS, 10000, {
+        min: 1,
+        max: 300000,
+      }),
+      max: parseInteger('PG_POOL_MAX', env.PG_POOL_MAX, 20, { min: 1, max: 100 }),
+    },
+    rateLimit: {
+      windowMs: parseInteger('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 60 * 1000, {
+        min: 1000,
+        max: 24 * 60 * 60 * 1000,
+      }),
+      apiMax: parseInteger('RATE_LIMIT_MAX', env.RATE_LIMIT_MAX, 60, { min: 1, max: 100000 }),
+      verifyMax: parseInteger('VERIFY_RATE_LIMIT_MAX', env.VERIFY_RATE_LIMIT_MAX, 10, { min: 1, max: 100000 }),
+    },
+  };
+}
+
+module.exports = { loadConfig };

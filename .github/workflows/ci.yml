@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Node.js ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24, 26]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run checks
+        run: pnpm check
+
+  integration:
+    name: PostgreSQL and Redis integration (Node.js ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: 24
+            postgresPort: 15432
+            redisPort: 16379
+          - node: 26
+            postgresPort: 25432
+            redisPort: 26379
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: solder
+          POSTGRES_PASSWORD: solder
+          POSTGRES_DB: solder
+        ports:
+          - ${{ matrix.postgresPort }}:5432
+        options: >-
+          --health-cmd "pg_isready -U solder -d solder"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+      redis:
+        image: redis:7-alpine
+        ports:
+          - ${{ matrix.redisPort }}:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@8912a9102ac27614460f54aedde9e1e7f9aec20d # v6.0.5
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Initialize test schema
+        env:
+          PGPASSWORD: solder
+          PGPORT: ${{ matrix.postgresPort }}
+        run: >-
+          docker run --rm --interactive --network host --env PGPASSWORD
+          postgres:18-alpine psql --host=localhost --port="$PGPORT"
+          --username=solder --dbname=solder < test/fixtures/schema.sql
+
+      - name: Run integration tests
+        env:
+          SOLDERJS_ALLOW_DESTRUCTIVE_TESTS: '1'
+          DATABASE_URL: postgres://solder:solder@localhost:${{ matrix.postgresPort }}/solder
+          REDIS_HOST: localhost
+          REDIS_PORT: ${{ matrix.redisPort }}
+        run: pnpm test:integration
