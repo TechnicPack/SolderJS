@@ -176,6 +176,17 @@ describe('content data', () => {
 });
 
 describe('cache resilience', () => {
+  it('continues key authentication when Redis is unavailable', async () => {
+    const keyInfo = { name: 'Test Key', created_at: '2026-01-01' };
+    const context = harness([keyInfo]);
+    context.failReads(new Error('Redis unavailable'));
+    context.failWrites(new Error('Redis unavailable'));
+
+    assert.deepEqual(await context.data.getKey('valid-key'), keyInfo);
+    assert.equal(context.queryCalls.length, 1);
+    assert.equal(context.logs.length, 2);
+  });
+
   it('falls back to PostgreSQL when cache reads fail', async () => {
     const rows = [{ id: 1, slug: 'pack' }];
     const context = harness(rows);
