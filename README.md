@@ -34,7 +34,7 @@ A `.env` file is optional. In production, variables can be provided directly by 
 | `TRUST_PROXY`              | `false`              | Proxy hop count/trusted value; `true` is rejected                  |
 | `MIRROR_URL`               | `https://localhost/` | Base URL used to construct mod download URLs                       |
 | `NODE_LOGGING`             | `true`               | Enable application logging                                         |
-| `LOGGING_LEVEL`            | `info`               | Winston npm level (`error` through `silly`)                        |
+| `LOGGING_LEVEL`            | `info`               | Winston log level (`error` through `silly`)                        |
 | `PG_CONNECTION_TIMEOUT_MS` | `5000`               | PostgreSQL connection timeout                                      |
 | `PG_QUERY_TIMEOUT_MS`      | `10000`              | PostgreSQL query timeout                                           |
 | `PG_POOL_MAX`              | `20`                 | Maximum PostgreSQL pool size                                       |
