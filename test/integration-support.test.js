@@ -39,7 +39,7 @@ describe('integration test safeguards', () => {
     const cache = {
       get: async (key) => store.get(key) ?? null,
       set: async (key, value) => store.set(key, value),
-      del: async (keys) => {
+      unlink: async (keys) => {
         for (const key of keys) {
           store.delete(key);
         }

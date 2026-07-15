@@ -44,7 +44,7 @@ function createNamespacedCache(cache, namespace = `solderjs:test:${randomUUID()}
       if (writtenKeys.size === 0) {
         return;
       }
-      await cache.del(Array.from(writtenKeys));
+      await cache.unlink(Array.from(writtenKeys));
       writtenKeys.clear();
     },
   };
