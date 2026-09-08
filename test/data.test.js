@@ -206,6 +206,30 @@ describe('cache resilience', () => {
     assert.equal(context.logs[0][0], 'warn');
   });
 
+  it('returns fresh database results while cache writes remain pending', async () => {
+    let rows = [{ id: 1, slug: 'pack' }];
+    const write = Promise.withResolvers();
+    const data = createData({
+      pool: { query: async () => ({ rows }) },
+      cache: {
+        get: async () => null,
+        set: () => write.promise,
+      },
+      log() {},
+    });
+    const pending = Symbol('still waiting for Redis');
+    const readWithoutWaiting = () =>
+      Promise.race([data.getModpacks(), new Promise((resolve) => setImmediate(resolve, pending))]);
+
+    try {
+      assert.deepEqual(await readWithoutWaiting(), rows);
+      rows = [{ id: 2, slug: 'updated-pack' }];
+      assert.deepEqual(await readWithoutWaiting(), rows);
+    } finally {
+      write.resolve();
+    }
+  });
+
   it('recovers from malformed cached JSON', async () => {
     const rows = [{ id: 1, slug: 'pack' }];
     const context = harness(rows);

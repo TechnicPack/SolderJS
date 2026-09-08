@@ -40,7 +40,8 @@ function createData({ pool, cache, log }) {
     const pending = (async () => {
       const value = await query();
       const effectiveTtl = value === null ? Math.min(ttl, AUTH_TTL_SECONDS) : ttl;
-      await writeCache(key, value, effectiveTtl);
+      // Cache population must not delay a successful database response.
+      void writeCache(key, value, effectiveTtl);
       return value;
     })();
     inFlight.set(key, pending);
