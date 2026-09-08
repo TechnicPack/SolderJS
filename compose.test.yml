@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: solder
       POSTGRES_DB: solder
     ports:
-      - '5433:5432'
+      - '127.0.0.1:5433:5432'
     volumes:
       - ./test/fixtures/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     tmpfs:
@@ -20,7 +20,7 @@ services:
   redis:
     image: redis:8-alpine
     ports:
-      - '6380:6379'
+      - '127.0.0.1:6380:6379'
     tmpfs:
       - /data
     healthcheck:
