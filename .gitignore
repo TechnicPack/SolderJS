@@ -1,4 +1,5 @@
 .env
 /.idea
+/.pnpm-store
 /.vscode
 node_modules

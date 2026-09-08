@@ -2,21 +2,31 @@
   "name": "solderjs",
   "version": "3.0.7",
   "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "test": "node --test test/*.test.js",
+    "test:integration": "node --test test/integration/*.test.js",
+    "test:integration:local": "SOLDERJS_ALLOW_DESTRUCTIVE_TESTS=1 DATABASE_URL=postgres://solder:solder@localhost:5433/solder REDIS_HOST=localhost REDIS_PORT=6380 pnpm test:integration",
+    "test:services:up": "docker compose -f compose.test.yml up -d --wait",
+    "test:services:down": "docker compose -f compose.test.yml down -v",
+    "check": "pnpm lint && pnpm format:check && pnpm test"
+  },
   "dependencies": {
-    "async": "^3.2.6",
     "express": "^5.2.1",
-    "pg": "^8.18.0",
-    "redis": "^3.1.2",
+    "express-rate-limit": "^8.5.2",
+    "pg": "^8.22.0",
+    "redis": "^5.12.1",
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.2",
-    "eslint": "9.39.2",
-    "eslint-config-prettier": "10.1.8",
-    "globals": "17.0.0",
-    "prettier": "3.7.4"
+    "@biomejs/biome": "2.5.3",
+    "supertest": "^7.2.2"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13",
+    "pnpm": "11"
   }
 }
