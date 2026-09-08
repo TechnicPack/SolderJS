@@ -18,15 +18,15 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12
+          version: 12.3.4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -52,7 +52,7 @@ jobs:
             redisPort: 26379
     services:
       postgres:
-        image: postgres:18-alpine
+        image: postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
         env:
           POSTGRES_USER: solder
           POSTGRES_PASSWORD: solder
@@ -65,7 +65,7 @@ jobs:
           --health-timeout 3s
           --health-retries 15
       redis:
-        image: redis:8-alpine
+        image: redis:8-alpine@sha256:becdda6c7f4b3fb42e42fd7f120bbf5c54c4caaaf16f26da24e4563d2c1f0576
         ports:
           - ${{ matrix.redisPort }}:6379
         options: >-
@@ -75,15 +75,15 @@ jobs:
           --health-retries 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12
+          version: 12.3.4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -97,7 +97,7 @@ jobs:
           PGPORT: ${{ matrix.postgresPort }}
         run: >-
           docker run --rm --interactive --network host --env PGPASSWORD
-          postgres:18-alpine psql --host=localhost --port="$PGPORT"
+          postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2 psql --host=localhost --port="$PGPORT"
           --username=solder --dbname=solder < test/fixtures/schema.sql
 
       - name: Run integration tests

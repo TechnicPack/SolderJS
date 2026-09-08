@@ -7,7 +7,7 @@ SolderJS is an alternative read-only API for [TechnicSolder](https://github.com/
 ## Requirements
 
 - Node.js 22 or newer (CI covers 22, 24, and 26)
-- pnpm 12
+- pnpm 12.3.4
 - An existing TechnicSolder database on PostgreSQL
 - Redis 7 or newer
 

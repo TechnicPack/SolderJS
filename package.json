@@ -23,10 +23,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.12",
-    "supertest": "^7.2.2"
+    "supertest": "7.2.2"
   },
   "engines": {
     "node": ">=22.13",
-    "pnpm": "12"
+    "pnpm": "12.3.4"
   }
 }
