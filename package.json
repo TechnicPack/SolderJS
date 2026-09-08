@@ -22,7 +22,7 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.3",
+    "@biomejs/biome": "2.5.12",
     "supertest": "^7.2.2"
   },
   "engines": {
