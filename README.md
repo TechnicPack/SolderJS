@@ -7,7 +7,7 @@ SolderJS is an alternative read-only API for [TechnicSolder](https://github.com/
 ## Requirements
 
 - Node.js 22 or newer (CI covers 22, 24, and 26)
-- pnpm 12.3.4
+- pnpm 12.15.0
 - An existing TechnicSolder database on PostgreSQL
 - Redis 7 or newer
 
@@ -26,25 +26,25 @@ A `.env` file is optional. In production, variables can be provided directly by 
 
 ## Configuration
 
-| Variable                   | Default              | Description                                                        |
-| -------------------------- | -------------------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`             | required             | PostgreSQL URL for the existing TechnicSolder database             |
-| `HOST`                     | `localhost`          | HTTP listen address                                                |
-| `PORT`                     | `3000`               | HTTP listen port                                                   |
-| `TRUST_PROXY`              | `false`              | Proxy hop count/trusted value; `true` is rejected                  |
-| `MIRROR_URL`               | `https://localhost/` | Base URL used to construct mod download URLs                       |
-| `NODE_LOGGING`             | `true`               | Enable application logging                                         |
-| `LOGGING_LEVEL`            | `info`               | Winston log level (`error` through `silly`)                        |
-| `PG_CONNECTION_TIMEOUT_MS` | `5000`               | PostgreSQL connection timeout                                      |
-| `PG_QUERY_TIMEOUT_MS`      | `10000`              | PostgreSQL query timeout                                           |
-| `PG_POOL_MAX`              | `20`                 | Maximum PostgreSQL pool size                                       |
-| `REDIS_HOST`               | `localhost`          | Redis host                                                         |
-| `REDIS_PORT`               | `6379`               | Redis port                                                         |
-| `REDIS_PASSWORD`           | unset                | Redis password                                                     |
-| `REDIS_CONNECT_TIMEOUT_MS` | `5000`               | Timeout for each Redis connection attempt                          |
-| `RATE_LIMIT_WINDOW_MS`     | `60000`              | Per-instance API rate-limit window                                 |
-| `RATE_LIMIT_MAX`           | `60`                 | Requests allowed per client in each window                         |
-| `VERIFY_RATE_LIMIT_MAX`    | `10`                 | Key-verification requests allowed per client in each window        |
+| Variable                   | Default              | Description                                                 |
+| -------------------------- | -------------------- | ----------------------------------------------------------- |
+| `DATABASE_URL`             | required             | PostgreSQL URL for the existing TechnicSolder database      |
+| `HOST`                     | `localhost`          | HTTP listen address                                         |
+| `PORT`                     | `3000`               | HTTP listen port                                            |
+| `TRUST_PROXY`              | `false`              | Proxy hop count/trusted value; `true` is rejected           |
+| `MIRROR_URL`               | `https://localhost/` | Base URL used to construct mod download URLs                |
+| `NODE_LOGGING`             | `true`               | Enable application logging                                  |
+| `LOGGING_LEVEL`            | `info`               | Winston log level (`error` through `silly`)                 |
+| `PG_CONNECTION_TIMEOUT_MS` | `5000`               | PostgreSQL connection timeout                               |
+| `PG_QUERY_TIMEOUT_MS`      | `10000`              | PostgreSQL query timeout                                    |
+| `PG_POOL_MAX`              | `20`                 | Maximum PostgreSQL pool size                                |
+| `REDIS_HOST`               | `localhost`          | Redis host                                                  |
+| `REDIS_PORT`               | `6379`               | Redis port                                                  |
+| `REDIS_PASSWORD`           | unset                | Redis password                                              |
+| `REDIS_CONNECT_TIMEOUT_MS` | `5000`               | Timeout for each Redis connection attempt                   |
+| `RATE_LIMIT_WINDOW_MS`     | `60000`              | Per-instance API rate-limit window                          |
+| `RATE_LIMIT_MAX`           | `60`                 | Requests allowed per client in each window                  |
+| `VERIFY_RATE_LIMIT_MAX`    | `10`                 | Key-verification requests allowed per client in each window |
 
 Keep `TRUST_PROXY=false` unless the service is behind a known reverse proxy. For a single proxy hop, use `TRUST_PROXY=1`; trusting an incorrect number of hops can allow clients to spoof their address. Boolean `true` is rejected because trusting every proxy allows clients to bypass IP-based rate limits.
 
@@ -55,14 +55,12 @@ The default limits match TechnicSolder's 60 API requests and 10 key-verification
 ## Authentication
 
 Authentication matches TechnicSolder's read API:
-
 - `?k=<API key>`
 - `?cid=<client UUID>`
 
 SolderJS intentionally does not define header-based authentication so clients remain interchangeable with TechnicSolder. Always use TLS and configure proxies to redact these query parameters from access logs.
 
 Visibility follows TechnicSolder's read API behavior:
-
 - Public modpacks and published public builds are available anonymously.
 - Hidden modpacks are omitted from listings without access, but a non-private hidden modpack remains directly addressable.
 - Private modpacks and private builds require an API key or a client assignment for that modpack.

@@ -23,10 +23,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12.3.4
+          version: 12.15.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -52,7 +52,7 @@ jobs:
             redisPort: 26379
     services:
       postgres:
-        image: postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+        image: postgres:18-alpine@sha256:83148c0bc09eac4d598b70a61e1404d0212b76c95c504bfd6c81a4c59ec91792
         env:
           POSTGRES_USER: solder
           POSTGRES_PASSWORD: solder
@@ -65,7 +65,7 @@ jobs:
           --health-timeout 3s
           --health-retries 15
       redis:
-        image: redis:8-alpine@sha256:becdda6c7f4b3fb42e42fd7f120bbf5c54c4caaaf16f26da24e4563d2c1f0576
+        image: redis:8-alpine@sha256:615b4cedaff0c1437a1548acae4222572df8c021eeb7382d64cb8b5e3a13ac7a
         ports:
           - ${{ matrix.redisPort }}:6379
         options: >-
@@ -80,10 +80,10 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          version: 12.3.4
+          version: 12.15.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -97,12 +97,12 @@ jobs:
           PGPORT: ${{ matrix.postgresPort }}
         run: >-
           docker run --rm --interactive --network host --env PGPASSWORD
-          postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2 psql --host=localhost --port="$PGPORT"
+          postgres:18-alpine@sha256:83148c0bc09eac4d598b70a61e1404d0212b76c95c504bfd6c81a4c59ec91792 psql --host=localhost --port="$PGPORT"
           --username=solder --dbname=solder < test/fixtures/schema.sql
 
       - name: Run integration tests
         env:
-          SOLDERJS_ALLOW_DESTRUCTIVE_TESTS: '1'
+          SOLDERJS_ALLOW_DESTRUCTIVE_TESTS: "1"
           DATABASE_URL: postgres://solder:solder@localhost:${{ matrix.postgresPort }}/solder
           REDIS_HOST: localhost
           REDIS_PORT: ${{ matrix.redisPort }}

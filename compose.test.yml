@@ -1,30 +1,30 @@
 services:
   postgres:
-    image: postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+    image: postgres:18-alpine@sha256:83148c0bc09eac4d598b70a61e1404d0212b76c95c504bfd6c81a4c59ec91792
     environment:
       POSTGRES_USER: solder
       POSTGRES_PASSWORD: solder
       POSTGRES_DB: solder
     ports:
-      - '127.0.0.1:5433:5432'
+      - "127.0.0.1:5433:5432"
     volumes:
       - ./test/fixtures/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     tmpfs:
       - /var/lib/postgresql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U solder -d solder']
+      test: ["CMD-SHELL", "pg_isready -U solder -d solder"]
       interval: 2s
       timeout: 3s
       retries: 15
 
   redis:
-    image: redis:8-alpine@sha256:becdda6c7f4b3fb42e42fd7f120bbf5c54c4caaaf16f26da24e4563d2c1f0576
+    image: redis:8-alpine@sha256:615b4cedaff0c1437a1548acae4222572df8c021eeb7382d64cb8b5e3a13ac7a
     ports:
-      - '127.0.0.1:6380:6379'
+      - "127.0.0.1:6380:6379"
     tmpfs:
       - /data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       interval: 2s
       timeout: 3s
       retries: 15
