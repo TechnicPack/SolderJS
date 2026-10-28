@@ -20,6 +20,6 @@ jobs:
     steps:
       # Inspect registry metadata only; never check out or execute PR code.
       - name: Compare pinned Docker images
-        uses: TechnicPack/docker-image-diff@4f09bbb05499ffee9f6b655560746d29dc0818b4 # v1.0.2
+        uses: TechnicPack/docker-image-diff@9a7c7165d8e02a14f384d2c90999721912885591 # v1.2.0
         with:
           allowed-registries: docker.io
