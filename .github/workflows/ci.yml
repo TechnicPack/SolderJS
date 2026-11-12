@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24, 26]
+        node: ['lts/*', 'current']
 
     steps:
       - name: Check out repository
@@ -29,6 +29,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
           cache: pnpm
 
       - name: Install dependencies
@@ -44,12 +45,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - node: 24
-            postgresPort: 15432
-            redisPort: 16379
-          - node: 26
+          - node: 'lts/*'
             postgresPort: 25432
             redisPort: 26379
+          - node: 'current'
+            postgresPort: 15432
+            redisPort: 16379
     services:
       postgres:
         image: postgres:18-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
@@ -86,6 +87,7 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
           cache: pnpm
 
       - name: Install dependencies

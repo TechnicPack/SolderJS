@@ -6,7 +6,7 @@ SolderJS is an alternative read-only API for [TechnicSolder](https://github.com/
 
 ## Requirements
 
-- Node.js 22 or newer (CI covers 22, 24, and 26)
+- Node.js 26 or newer (latest LTS recommended)
 - pnpm 12.15.0
 - An existing TechnicSolder database on PostgreSQL
 - Redis 7 or newer
@@ -89,7 +89,7 @@ pnpm test:integration:local # Exercise the data layer against those services
 pnpm test:services:down     # Stop and remove test services
 ```
 
-CI runs checks on Node.js 22, 24, and 26. The PostgreSQL and Redis integration suite runs on Node.js 24 and 26. Integration tests truncate their PostgreSQL fixture tables and require both an explicit destructive-test opt-in and a marker found only in the test schema. The local command above supplies the opt-in and connects only to the ports exposed by `compose.test.yml`.
+CI runs checks and the PostgreSQL and Redis integration suite on the latest LTS (`lts/*`) and current stable (`current`) Node.js releases, resolving the latest available versions on each run. Local development is pinned to Node.js 26 in `.node-version`. Integration tests truncate their PostgreSQL fixture tables and require both an explicit destructive-test opt-in and a marker found only in the test schema. The local command above supplies the opt-in and connects only to the ports exposed by `compose.test.yml`.
 
 Redis is treated as an optional acceleration layer: the service starts and remains ready when Redis is unavailable, serves requests from PostgreSQL, and reconnects to Redis in the background. Readiness probes are coalesced for one second to avoid amplifying PostgreSQL load. Restrict `/health/ready` to the orchestrator or monitoring network at the reverse proxy.
 
